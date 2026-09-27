@@ -1,7 +1,7 @@
 .search-panel {
-  padding: 28px 24px 22px;
+  padding: 28px 24px;
   background: linear-gradient(135deg, alpha(@accent_bg_color, .16), alpha(@accent_bg_color, .04));
-  border-bottom: 1px solid alpha(@borders, .55);
+  border-right: 1px solid alpha(@borders, .55);
 }
 
 .search-box entry { min-height: 42px; }
@@ -15,4 +15,3 @@
   line-height: 1.35;
   background: transparent;
 }
-

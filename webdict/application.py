@@ -51,6 +51,7 @@ class WebdictApplication(Adw.Application):
         self.window = builder.get_object("window")
         self.window.set_application(self)
         self.search = builder.get_object("search_entry")
+        self.split_view = builder.get_object("split_view")
         self.edition = builder.get_object("edition_dropdown")
         self.stack = builder.get_object("content_stack")
         self.title = builder.get_object("result_title")
@@ -97,6 +98,7 @@ class WebdictApplication(Adw.Application):
         self.search.remove_css_class("error")
         edition_name, code = EDITIONS[self.edition.get_selected()]
         self.stack.set_visible_child_name("loading")
+        self.split_view.set_show_content(True)
         self.search.set_sensitive(False)
         future = self.executor.submit(lookup, word, code)
         future.add_done_callback(lambda f: GLib.idle_add(self.finish_search, f, edition_name))
