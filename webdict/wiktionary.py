@@ -36,6 +36,12 @@ class _ReadableHTML(HTMLParser):
     """Turn MediaWiki HTML into a small, safe rich-text representation."""
 
     SKIP = {"style", "script", "table", "figure", "sup"}
+    SKIP_CLASSES = {
+        "mw-editsection", "mw-jump-link", "mw-empty-elt", "noprint",
+        "metadata", "thumb", "NavFrame", "sister-project", "interproject",
+        "thumbcaption", "gallery", "mw-file-element", "floatleft", "floatright",
+    }
+    VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
     BLOCKS = {"h2", "h3", "h4", "h5", "p", "div", "dl", "dt", "dd", "ul", "ol"}
 
     def __init__(self) -> None:
@@ -65,9 +71,12 @@ class _ReadableHTML(HTMLParser):
             self._append("\n" * (count - existing))
 
     def handle_starttag(self, tag: str, attrs) -> None:
-        if tag in self.SKIP:
-            self.skip_depth += 1
-        if self.skip_depth:
+        attributes = dict(attrs)
+        classes = set(attributes.get("class", "").split())
+        should_skip = tag in self.SKIP or bool(classes & self.SKIP_CLASSES)
+        if self.skip_depth or should_skip:
+            if tag not in self.VOID:
+                self.skip_depth += 1
             return
         if tag in {"ul", "ol"}:
             self.list_depth += 1
@@ -76,7 +85,7 @@ class _ReadableHTML(HTMLParser):
             self._newline()
             self._append("  " * max(0, self.list_depth - 1) + "• ")
         elif tag in {"h2", "h3", "h4", "h5"}:
-            self._newline(2)
+            self._newline()
             self.active.append(tag)
         elif tag in {"p", "div", "dl", "dt", "dd"}:
             self._newline()
@@ -92,10 +101,8 @@ class _ReadableHTML(HTMLParser):
             self.active.append("link")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in self.SKIP:
-            self.skip_depth = max(0, self.skip_depth - 1)
-            return
         if self.skip_depth:
+            self.skip_depth = max(0, self.skip_depth - 1)
             return
         style = {
             "b": "bold", "strong": "bold", "i": "italic", "em": "italic",
@@ -108,7 +115,7 @@ class _ReadableHTML(HTMLParser):
         if tag in {"ul", "ol"}:
             self.list_depth = max(0, self.list_depth - 1)
         if tag in self.BLOCKS:
-            self._newline(2 if tag in {"h2", "h3", "h4", "h5"} else 1)
+            self._newline()
 
     def handle_data(self, data: str) -> None:
         if self.skip_depth:

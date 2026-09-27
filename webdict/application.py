@@ -79,9 +79,9 @@ class WebdictApplication(Adw.Application):
             "italic": {"style": Pango.Style.ITALIC},
             "code": {"family": "monospace"},
             "link": {"underline": Pango.Underline.SINGLE},
-            "h2": {"weight": Pango.Weight.BOLD, "scale": 1.55, "pixels_above_lines": 12, "pixels_below_lines": 5},
-            "h3": {"weight": Pango.Weight.BOLD, "scale": 1.3, "pixels_above_lines": 9, "pixels_below_lines": 4},
-            "h4": {"weight": Pango.Weight.BOLD, "scale": 1.15, "pixels_above_lines": 7},
+            "h2": {"weight": Pango.Weight.BOLD, "scale": 1.55, "pixels_above_lines": 10, "pixels_below_lines": 3},
+            "h3": {"weight": Pango.Weight.BOLD, "scale": 1.3, "pixels_above_lines": 8, "pixels_below_lines": 2},
+            "h4": {"weight": Pango.Weight.BOLD, "scale": 1.15, "pixels_above_lines": 6},
             "h5": {"weight": Pango.Weight.BOLD},
         }
         for name, properties in styles.items():
