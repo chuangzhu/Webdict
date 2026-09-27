@@ -42,22 +42,6 @@ Adw.ApplicationWindow window {
           spacing: 18;
 
           Gtk.Box {
-            orientation: vertical;
-            spacing: 6;
-            Gtk.Label {
-              styles ["title-2"]
-              label: _("What does it mean?");
-              halign: start;
-            }
-            Gtk.Label {
-              styles ["dim-label"]
-              label: _("Search any word in the Wiktionary edition you prefer.");
-              wrap: true;
-              xalign: 0;
-            }
-          }
-
-          Gtk.Box {
             styles ["linked", "search-box"]
             Gtk.SearchEntry search_entry {
               placeholder-text: _("Enter a word…");

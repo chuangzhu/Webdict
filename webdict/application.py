@@ -127,10 +127,6 @@ class WebdictApplication(Adw.Application):
             self.suggestion_list.remove(row)
         for suggestion in suggestions:
             label = Gtk.Label(label=suggestion, xalign=0, ellipsize=Pango.EllipsizeMode.END)
-            label.set_margin_start(12)
-            label.set_margin_end(12)
-            label.set_margin_top(8)
-            label.set_margin_bottom(8)
             row = Gtk.ListBoxRow(child=label)
             row.suggestion = suggestion
             self.suggestion_list.append(row)

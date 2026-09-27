@@ -1,6 +1,5 @@
 .search-panel {
   padding: 28px 24px;
-  background: linear-gradient(135deg, alpha(@accent_bg_color, .16), alpha(@accent_bg_color, .04));
   border-right: 1px solid alpha(@borders, .55);
 }
 
