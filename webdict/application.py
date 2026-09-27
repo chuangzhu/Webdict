@@ -59,6 +59,10 @@ class WebdictApplication(Adw.Application):
         self.result = builder.get_object("result_text")
         self.result_buffer = self.result.get_buffer()
         self._create_text_styles()
+        definition_click = Gtk.GestureClick.new()
+        definition_click.set_button(Gdk.BUTTON_PRIMARY)
+        definition_click.connect("released", self.on_definition_click)
+        self.result.add_controller(definition_click)
         self.open_button = builder.get_object("open_button")
         self.retry_button = builder.get_object("retry_button")
         self.error_label = builder.get_object("error_label")
@@ -145,6 +149,27 @@ class WebdictApplication(Adw.Application):
         self.search.set_text(row.suggestion)
         self.search.set_position(-1)
         self.on_search()
+
+    def on_definition_click(self, _gesture, presses: int, x: float, y: float) -> None:
+        """Look up a word that was double-clicked in the rendered definition."""
+        if presses != 2:
+            return
+        # Let GtkTextView's native double-click handler establish its word
+        # selection first. This respects language-aware boundaries and text
+        # tags better than deriving a word from raw pointer coordinates.
+        GLib.idle_add(self.lookup_selected_definition_word)
+
+    def lookup_selected_definition_word(self) -> bool:
+        if not self.result_buffer.get_has_selection():
+            return GLib.SOURCE_REMOVE
+        start, end = self.result_buffer.get_selection_bounds()
+        word = self.result_buffer.get_text(start, end, False).strip()
+        if not word:
+            return GLib.SOURCE_REMOVE
+        self.search.set_text(word)
+        self.search.set_position(-1)
+        self.on_search()
+        return GLib.SOURCE_REMOVE
 
     def _create_text_styles(self) -> None:
         styles = {
