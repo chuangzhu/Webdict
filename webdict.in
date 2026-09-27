@@ -1,0 +1,5 @@
+#!@PYTHON@
+from webdict.application import main
+
+raise SystemExit(main())
+

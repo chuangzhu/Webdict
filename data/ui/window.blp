@@ -1,0 +1,172 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adw.ApplicationWindow window {
+  title: _("Webdict");
+  default-width: 760;
+  default-height: 680;
+  width-request: 360;
+  height-request: 480;
+
+  content: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [start]
+      Gtk.MenuButton {
+        icon-name: "open-menu-symbolic";
+        tooltip-text: _("Main Menu");
+        menu-model: main_menu;
+      }
+      title-widget: Adw.WindowTitle {
+        title: _("Webdict");
+        subtitle: _("Wiktionary, beautifully focused");
+      };
+    }
+
+    content: Gtk.Box {
+      orientation: vertical;
+
+      Gtk.Box {
+        styles ["search-panel"]
+        orientation: vertical;
+        spacing: 12;
+
+        Gtk.Label {
+          styles ["title-1"]
+          label: _("What does it mean?");
+          halign: center;
+        }
+        Gtk.Label {
+          styles ["dim-label"]
+          label: _("Search any word in the Wiktionary edition you prefer.");
+          wrap: true;
+          justify: center;
+          halign: center;
+        }
+
+        Gtk.Box {
+          styles ["linked", "search-box"]
+          halign: center;
+
+          Gtk.SearchEntry search_entry {
+            placeholder-text: _("Enter a word…");
+            hexpand: true;
+            width-chars: 28;
+          }
+          Gtk.Button search_button {
+            styles ["suggested-action"]
+            icon-name: "system-search-symbolic";
+            tooltip-text: _("Search");
+          }
+        }
+
+        Gtk.Box {
+          spacing: 8;
+          halign: center;
+          Gtk.Image { icon-name: "languages-symbolic"; }
+          Gtk.Label { label: _("Edition"); }
+          Gtk.DropDown edition_dropdown {
+            tooltip-text: _("Wiktionary language edition");
+          }
+        }
+      }
+
+      Gtk.Stack content_stack {
+        vexpand: true;
+        transition-type: crossfade;
+
+        Gtk.StackPage {
+          name: "welcome";
+          child: Adw.StatusPage {
+            icon-name: "io.github.webdict.Webdict";
+            title: _("A world of words");
+            description: _("Choose an edition above and start exploring.");
+          };
+        }
+        Gtk.StackPage {
+          name: "loading";
+          child: Gtk.Box {
+            orientation: vertical;
+            valign: center;
+            halign: center;
+            spacing: 16;
+            Gtk.Spinner { spinning: true; width-request: 36; height-request: 36; }
+            Gtk.Label {
+              styles ["title-3"]
+              label: _("Looking it up…");
+            }
+          };
+        }
+        Gtk.StackPage {
+          name: "error";
+          child: Adw.StatusPage {
+            icon-name: "dialog-warning-symbolic";
+            title: _("No definition here");
+            description: _("Check the spelling or try another edition.");
+            child: Gtk.Box {
+              orientation: vertical;
+              spacing: 12;
+              Gtk.Label error_label { wrap: true; }
+              Gtk.Button retry_button {
+                styles ["pill"]
+                label: _("Try Again");
+                halign: center;
+              }
+            };
+          };
+        }
+        Gtk.StackPage {
+          name: "result";
+          child: Gtk.Box {
+            orientation: vertical;
+            spacing: 0;
+            Gtk.Box {
+              styles ["result-heading"]
+              spacing: 12;
+              Gtk.Box {
+                orientation: vertical;
+                hexpand: true;
+                Gtk.Label result_title {
+                  styles ["title-1"]
+                  halign: start;
+                  ellipsize: end;
+                }
+                Gtk.Label result_subtitle {
+                  styles ["dim-label"]
+                  halign: start;
+                }
+              }
+              Gtk.Button open_button {
+                styles ["flat"]
+                icon-name: "external-link-symbolic";
+                tooltip-text: _("Open on Wiktionary");
+                valign: center;
+              }
+            }
+            Gtk.ScrolledWindow {
+              vexpand: true;
+              hscrollbar-policy: never;
+              Gtk.TextView result_text {
+                styles ["definition"]
+                editable: false;
+                cursor-visible: false;
+                wrap-mode: word;
+                top-margin: 24;
+                bottom-margin: 48;
+                left-margin: 32;
+                right-margin: 32;
+                pixels-below-lines: 7;
+              }
+            }
+          };
+        }
+      }
+    };
+  };
+}
+
+menu main_menu {
+  item (_("About Webdict"), "app.about")
+  item (_("Quit"), "app.quit")
+}
+
