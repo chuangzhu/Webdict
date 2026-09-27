@@ -26,7 +26,6 @@ Adw.ApplicationWindow window {
           show-end-title-buttons: false;
           title-widget: Adw.WindowTitle {
             title: _("Webdict");
-            subtitle: _("Wiktionary dictionary");
           };
           [start]
           Gtk.MenuButton {
@@ -67,24 +66,25 @@ Adw.ApplicationWindow window {
               hexpand: true;
             }
           }
+        };
+
+        [bottom]
+        Gtk.Box {
+          orientation: vertical;
+          spacing: 8;
+          margin-start: 24;
+          margin-end: 24;
+          margin-bottom: 18;
 
           Gtk.Separator {}
-          Gtk.Box {
-            orientation: vertical;
-            spacing: 8;
-            Gtk.Image {
-              icon-name: "languages-symbolic";
-              pixel-size: 48;
-              halign: center;
-            }
-            Gtk.Label {
-              styles ["dim-label"]
-              label: _("Definitions come directly from the selected community-run Wiktionary.");
-              wrap: true;
-              justify: center;
-            }
+
+          Gtk.Label {
+            styles ["dim-label"]
+            label: _("Definitions are sourced from the selected Wiktionary edition.");
+            wrap: true;
+            justify: center;
           }
-        };
+        }
       };
     };
 

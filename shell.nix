@@ -13,6 +13,7 @@ pkgs.mkShell {
     meson
     ninja
     blueprint-compiler
+    adwaita-icon-theme
 
     # Common tools used while developing and packaging GTK applications.
     pkg-config
