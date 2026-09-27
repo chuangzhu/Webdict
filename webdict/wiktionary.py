@@ -180,3 +180,21 @@ def lookup(word: str, edition: str) -> Entry:
         f"https://{host}/wiki/{quote(parsed['title'].replace(' ', '_'))}",
         reader.rich_text(),
     )
+
+
+def search_suggestions(query: str, edition: str, limit: int = 8) -> tuple[str, ...]:
+    """Return title completions from a Wiktionary edition's search API."""
+    if not query.strip():
+        return ()
+    data = _get_json(f"{edition}.wiktionary.org", {
+        "action": "opensearch",
+        "search": query,
+        "namespace": "0",
+        "limit": str(limit),
+        "redirects": "resolve",
+        "format": "json",
+        "origin": "*",
+    })
+    if not isinstance(data, list) or len(data) < 2 or not isinstance(data[1], list):
+        return ()
+    return tuple(str(title) for title in data[1][:limit])
