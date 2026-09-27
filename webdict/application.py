@@ -9,7 +9,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango
 
 from . import __version__
 from .wiktionary import Entry, WiktionaryError, lookup
@@ -57,6 +57,8 @@ class WebdictApplication(Adw.Application):
         self.title = builder.get_object("result_title")
         self.subtitle = builder.get_object("result_subtitle")
         self.result = builder.get_object("result_text")
+        self.result_buffer = self.result.get_buffer()
+        self._create_text_styles()
         self.open_button = builder.get_object("open_button")
         self.retry_button = builder.get_object("retry_button")
         self.error_label = builder.get_object("error_label")
@@ -70,6 +72,30 @@ class WebdictApplication(Adw.Application):
         builder.get_object("search_button").connect("clicked", self.on_search)
         self.window.present()
         self.search.grab_focus()
+
+    def _create_text_styles(self) -> None:
+        styles = {
+            "bold": {"weight": Pango.Weight.BOLD},
+            "italic": {"style": Pango.Style.ITALIC},
+            "code": {"family": "monospace"},
+            "link": {"underline": Pango.Underline.SINGLE},
+            "h2": {"weight": Pango.Weight.BOLD, "scale": 1.55, "pixels_above_lines": 12, "pixels_below_lines": 5},
+            "h3": {"weight": Pango.Weight.BOLD, "scale": 1.3, "pixels_above_lines": 9, "pixels_below_lines": 4},
+            "h4": {"weight": Pango.Weight.BOLD, "scale": 1.15, "pixels_above_lines": 7},
+            "h5": {"weight": Pango.Weight.BOLD},
+        }
+        for name, properties in styles.items():
+            self.result_buffer.create_tag(name, **properties)
+
+    def _render_entry(self, entry: Entry) -> None:
+        self.result_buffer.set_text("")
+        for run in entry.runs:
+            position = self.result_buffer.get_end_iter()
+            if run.tags:
+                tags = [self.result_buffer.get_tag_table().lookup(name) for name in run.tags]
+                self.result_buffer.insert_with_tags(position, run.text, *tags)
+            else:
+                self.result_buffer.insert(position, run.text)
 
     def _load_resources(self) -> None:
         if getattr(self, "_resource", None):
@@ -114,7 +140,7 @@ class WebdictApplication(Adw.Application):
         else:
             self.title.set_label(entry.title)
             self.subtitle.set_label(f"From {edition_name} Wiktionary")
-            self.result.get_buffer().set_text(entry.text)
+            self._render_entry(entry)
             self.current_url = entry.url
             self.stack.set_visible_child_name("result")
         return GLib.SOURCE_REMOVE

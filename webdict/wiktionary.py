@@ -19,23 +19,50 @@ class WiktionaryError(Exception):
 
 
 @dataclass(frozen=True)
+class TextRun:
+    text: str
+    tags: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class Entry:
     title: str
     text: str
     url: str
+    runs: tuple[TextRun, ...] = ()
 
 
 class _ReadableHTML(HTMLParser):
-    """Turn MediaWiki's definition HTML into compact, readable plain text."""
+    """Turn MediaWiki HTML into a small, safe rich-text representation."""
 
     SKIP = {"style", "script", "table", "figure", "sup"}
     BLOCKS = {"h2", "h3", "h4", "h5", "p", "div", "dl", "dt", "dd", "ul", "ol"}
 
     def __init__(self) -> None:
         super().__init__()
-        self.parts: list[str] = []
+        self.runs: list[TextRun] = []
         self.skip_depth = 0
         self.list_depth = 0
+        self.active: list[str] = []
+
+    def _append(self, text: str) -> None:
+        if not text:
+            return
+        tags = tuple(self.active)
+        if self.runs and self.runs[-1].tags == tags:
+            previous = self.runs[-1]
+            self.runs[-1] = TextRun(previous.text + text, tags)
+        else:
+            self.runs.append(TextRun(text, tags))
+
+    def _newline(self, count: int = 1) -> None:
+        while self.runs and not self.runs[-1].text:
+            self.runs.pop()
+        existing = 0
+        if self.runs:
+            existing = len(self.runs[-1].text) - len(self.runs[-1].text.rstrip("\n"))
+        if existing < count:
+            self._append("\n" * (count - existing))
 
     def handle_starttag(self, tag: str, attrs) -> None:
         if tag in self.SKIP:
@@ -44,12 +71,25 @@ class _ReadableHTML(HTMLParser):
             return
         if tag in {"ul", "ol"}:
             self.list_depth += 1
+            self._newline()
         if tag == "li":
-            self.parts.append("\n" + "  " * max(0, self.list_depth - 1) + "• ")
-        elif tag in self.BLOCKS:
-            self.parts.append("\n")
+            self._newline()
+            self._append("  " * max(0, self.list_depth - 1) + "• ")
+        elif tag in {"h2", "h3", "h4", "h5"}:
+            self._newline(2)
+            self.active.append(tag)
+        elif tag in {"p", "div", "dl", "dt", "dd"}:
+            self._newline()
         elif tag == "br":
-            self.parts.append("\n")
+            self._newline()
+        if tag in {"b", "strong"}:
+            self.active.append("bold")
+        elif tag in {"i", "em"}:
+            self.active.append("italic")
+        elif tag in {"code", "kbd", "samp"}:
+            self.active.append("code")
+        elif tag == "a":
+            self.active.append("link")
 
     def handle_endtag(self, tag: str) -> None:
         if tag in self.SKIP:
@@ -57,21 +97,40 @@ class _ReadableHTML(HTMLParser):
             return
         if self.skip_depth:
             return
+        style = {
+            "b": "bold", "strong": "bold", "i": "italic", "em": "italic",
+            "code": "code", "kbd": "code", "samp": "code", "a": "link",
+            "h2": "h2", "h3": "h3", "h4": "h4", "h5": "h5",
+        }.get(tag)
+        if style in self.active:
+            index = len(self.active) - 1 - self.active[::-1].index(style)
+            self.active.pop(index)
         if tag in {"ul", "ol"}:
             self.list_depth = max(0, self.list_depth - 1)
         if tag in self.BLOCKS:
-            self.parts.append("\n")
+            self._newline(2 if tag in {"h2", "h3", "h4", "h5"} else 1)
 
     def handle_data(self, data: str) -> None:
-        if not self.skip_depth:
-            self.parts.append(data)
+        if self.skip_depth:
+            return
+        value = re.sub(r"\s+", " ", data.replace("\xa0", " "))
+        if not self.runs or self.runs[-1].text.endswith((" ", "\n")):
+            value = value.lstrip()
+        self._append(value)
 
     def text(self) -> str:
-        raw = "".join(self.parts).replace("\xa0", " ")
-        raw = re.sub(r"[ \t]+", " ", raw)
-        raw = re.sub(r" *\n *", "\n", raw)
-        raw = re.sub(r"\n{3,}", "\n\n", raw)
-        return raw.strip()
+        return "".join(run.text for run in self.rich_text()).strip()
+
+    def rich_text(self) -> tuple[TextRun, ...]:
+        runs = list(self.runs)
+        while runs and not runs[0].text.strip():
+            runs.pop(0)
+        while runs and not runs[-1].text.strip():
+            runs.pop()
+        if runs:
+            runs[0] = TextRun(runs[0].text.lstrip(), runs[0].tags)
+            runs[-1] = TextRun(runs[-1].text.rstrip(), runs[-1].tags)
+        return tuple(run for run in runs if run.text)
 
 
 def _get_json(host: str, params: dict[str, str], timeout: int = 15):
@@ -108,4 +167,9 @@ def lookup(word: str, edition: str) -> Entry:
     reader = _ReadableHTML()
     reader.feed(parsed["text"])
     title = re.sub(r"<[^>]+>", "", parsed.get("displaytitle", parsed["title"]))
-    return Entry(title, reader.text(), f"https://{host}/wiki/{quote(parsed['title'].replace(' ', '_'))}")
+    return Entry(
+        title,
+        reader.text(),
+        f"https://{host}/wiki/{quote(parsed['title'].replace(' ', '_'))}",
+        reader.rich_text(),
+    )
