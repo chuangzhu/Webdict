@@ -206,34 +206,41 @@ class WebdictApplication(Adw.Application):
                 self.result.remove(button)
         self.section_buttons = []
         heading_style = None
+
+        def finish_heading() -> None:
+            section_index = len(self.definition_sections) - 1
+            section = self.definition_sections[section_index]
+            self.result_buffer.insert(self.result_buffer.get_end_iter(), " ")
+            anchor = self.result_buffer.create_child_anchor(self.result_buffer.get_end_iter())
+            button = Gtk.Button(
+                icon_name="pan-down-symbolic",
+                tooltip_text="Collapse section",
+                valign=Gtk.Align.CENTER,
+            )
+            button.add_css_class("flat")
+            button.add_css_class("circular")
+            button.add_css_class("section-disclosure")
+            button.connect(
+                "clicked",
+                lambda _button, index=section_index: self.toggle_definition_section(index),
+            )
+            self.result.add_child_at_anchor(button, anchor)
+            self.section_buttons.append(button)
+            section["button"] = button
+            section["heading_end"] = self.result_buffer.get_char_count()
+
         for run in entry.runs:
             run_heading = next((tag for tag in run.tags if tag in {"h2", "h3", "h4", "h5"}), None)
+            if heading_style and run_heading != heading_style:
+                finish_heading()
             if run_heading and run_heading != heading_style:
                 heading_start = self.result_buffer.get_char_count()
-                position = self.result_buffer.get_end_iter()
-                anchor = self.result_buffer.create_child_anchor(position)
-                section_index = len(self.definition_sections)
-                button = Gtk.Button(
-                    icon_name="pan-down-symbolic",
-                    tooltip_text="Collapse section",
-                    valign=Gtk.Align.CENTER,
-                )
-                button.add_css_class("flat")
-                button.add_css_class("circular")
-                button.add_css_class("section-disclosure")
-                button.connect(
-                    "clicked",
-                    lambda _button, index=section_index: self.toggle_definition_section(index),
-                )
-                self.result.add_child_at_anchor(button, anchor)
-                self.section_buttons.append(button)
-                self.result_buffer.insert(self.result_buffer.get_end_iter(), " ")
                 self.definition_sections.append({
                     "level": int(run_heading[1]),
                     "style": run_heading,
-                    "button": button,
+                    "button": None,
                     "heading_start": heading_start,
-                    "heading_end": heading_start + 2,
+                    "heading_end": heading_start,
                     "content_start": 0,
                     "content_end": 0,
                 })
@@ -243,9 +250,10 @@ class WebdictApplication(Adw.Application):
                 self.result_buffer.insert_with_tags(position, run.text, *tags)
             else:
                 self.result_buffer.insert(position, run.text)
-            if run_heading:
-                self.definition_sections[-1]["heading_end"] = self.result_buffer.get_char_count()
             heading_style = run_heading
+
+        if heading_style:
+            finish_heading()
 
         total = self.result_buffer.get_char_count()
         for index, section in enumerate(self.definition_sections):
