@@ -59,6 +59,9 @@ class WebdictApplication(Adw.Application):
         self.result = builder.get_object("result_text")
         self.result_buffer = self.result.get_buffer()
         self._create_text_styles()
+        self.definition_sections = []
+        self.collapsed_sections = set()
+        self.heading_toggle_timeout = None
         definition_click = Gtk.GestureClick.new()
         definition_click.set_button(Gdk.BUTTON_PRIMARY)
         definition_click.connect("released", self.on_definition_click)
@@ -151,13 +154,41 @@ class WebdictApplication(Adw.Application):
         self.on_search()
 
     def on_definition_click(self, _gesture, presses: int, x: float, y: float) -> None:
-        """Look up a word that was double-clicked in the rendered definition."""
-        if presses != 2:
+        """Toggle headings on one click; look up selected words on two."""
+        if presses == 2:
+            if self.heading_toggle_timeout is not None:
+                GLib.source_remove(self.heading_toggle_timeout)
+                self.heading_toggle_timeout = None
+            # Let GtkTextView's native double-click handler establish its word
+            # selection first. This respects language-aware boundaries and
+            # text tags better than deriving a word from pointer coordinates.
+            GLib.idle_add(self.lookup_selected_definition_word)
             return
-        # Let GtkTextView's native double-click handler establish its word
-        # selection first. This respects language-aware boundaries and text
-        # tags better than deriving a word from raw pointer coordinates.
-        GLib.idle_add(self.lookup_selected_definition_word)
+        if presses != 1:
+            return
+        _inside, iterator, _trailing = self.result.get_iter_at_position(int(x), int(y))
+        offset = iterator.get_offset()
+        section_index = next((
+            index for index, section in enumerate(self.definition_sections)
+            if section["heading_start"] <= offset < section["heading_end"]
+        ), None)
+        if section_index is None:
+            return
+        settings = Gtk.Settings.get_default()
+        delay = int(settings.get_property("gtk-double-click-time")) + 20
+        self.heading_toggle_timeout = GLib.timeout_add(
+            delay, self.toggle_definition_section, section_index
+        )
+
+    def toggle_definition_section(self, section_index: int) -> bool:
+        self.heading_toggle_timeout = None
+        if section_index in self.collapsed_sections:
+            self.collapsed_sections.remove(section_index)
+        else:
+            self.collapsed_sections.add(section_index)
+        self._apply_collapsed_sections()
+        self._set_section_disclosure(section_index)
+        return GLib.SOURCE_REMOVE
 
     def lookup_selected_definition_word(self) -> bool:
         if not self.result_buffer.get_has_selection():
@@ -181,19 +212,74 @@ class WebdictApplication(Adw.Application):
             "h3": {"weight": Pango.Weight.BOLD, "scale": 1.3, "pixels_above_lines": 8, "pixels_below_lines": 2},
             "h4": {"weight": Pango.Weight.BOLD, "scale": 1.15, "pixels_above_lines": 6},
             "h5": {"weight": Pango.Weight.BOLD},
+            "collapsed": {"invisible": True},
         }
         for name, properties in styles.items():
             self.result_buffer.create_tag(name, **properties)
 
     def _render_entry(self, entry: Entry) -> None:
         self.result_buffer.set_text("")
+        self.definition_sections = []
+        self.collapsed_sections = set()
+        heading_style = None
         for run in entry.runs:
+            run_heading = next((tag for tag in run.tags if tag in {"h2", "h3", "h4", "h5"}), None)
+            if run_heading and run_heading != heading_style:
+                heading_start = self.result_buffer.get_char_count()
+                position = self.result_buffer.get_end_iter()
+                heading_tag = self.result_buffer.get_tag_table().lookup(run_heading)
+                self.result_buffer.insert_with_tags(position, "▾ ", heading_tag)
+                self.definition_sections.append({
+                    "level": int(run_heading[1]),
+                    "style": run_heading,
+                    "heading_start": heading_start,
+                    "heading_end": heading_start + 2,
+                    "content_start": 0,
+                    "content_end": 0,
+                })
             position = self.result_buffer.get_end_iter()
             if run.tags:
                 tags = [self.result_buffer.get_tag_table().lookup(name) for name in run.tags]
                 self.result_buffer.insert_with_tags(position, run.text, *tags)
             else:
                 self.result_buffer.insert(position, run.text)
+            if run_heading:
+                self.definition_sections[-1]["heading_end"] = self.result_buffer.get_char_count()
+            heading_style = run_heading
+
+        total = self.result_buffer.get_char_count()
+        for index, section in enumerate(self.definition_sections):
+            content_start = section["heading_end"]
+            iterator = self.result_buffer.get_iter_at_offset(content_start)
+            if not iterator.is_end() and iterator.get_char() == "\n":
+                content_start += 1
+            section["content_start"] = content_start
+            section["content_end"] = next((
+                candidate["heading_start"]
+                for candidate in self.definition_sections[index + 1:]
+                if candidate["level"] <= section["level"]
+            ), total)
+
+    def _apply_collapsed_sections(self) -> None:
+        start = self.result_buffer.get_start_iter()
+        end = self.result_buffer.get_end_iter()
+        self.result_buffer.remove_tag_by_name("collapsed", start, end)
+        for index in self.collapsed_sections:
+            section = self.definition_sections[index]
+            start = self.result_buffer.get_iter_at_offset(section["content_start"])
+            end = self.result_buffer.get_iter_at_offset(section["content_end"])
+            self.result_buffer.apply_tag_by_name("collapsed", start, end)
+
+    def _set_section_disclosure(self, section_index: int) -> None:
+        section = self.definition_sections[section_index]
+        start = self.result_buffer.get_iter_at_offset(section["heading_start"])
+        end = start.copy()
+        end.forward_char()
+        self.result_buffer.delete(start, end)
+        start = self.result_buffer.get_iter_at_offset(section["heading_start"])
+        tag = self.result_buffer.get_tag_table().lookup(section["style"])
+        symbol = "▸" if section_index in self.collapsed_sections else "▾"
+        self.result_buffer.insert_with_tags(start, symbol, tag)
 
     def _load_resources(self) -> None:
         if getattr(self, "_resource", None):
