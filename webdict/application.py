@@ -258,7 +258,7 @@ class WebdictApplication(Adw.Application):
             if run_quotation and not in_quotation:
                 quotation_index = len(self.definition_quotations)
                 anchor = self.result_buffer.create_child_anchor(self.result_buffer.get_end_iter())
-                icon = Gtk.Image.new_from_icon_name("pan-down-symbolic")
+                icon = Gtk.Image.new_from_icon_name("pan-end-symbolic")
                 label = Gtk.Label(label="quotations")
                 button_content = Gtk.Box(spacing=4)
                 button_content.append(label)
@@ -336,7 +336,7 @@ class WebdictApplication(Adw.Application):
         quotation = self.definition_quotations[quotation_index]
         collapsed = quotation_index in self.collapsed_quotations
         quotation["icon"].set_from_icon_name(
-            "pan-down-symbolic" if collapsed else "pan-up-symbolic"
+            "pan-end-symbolic" if collapsed else "pan-down-symbolic"
         )
         quotation["button"].set_tooltip_text(
             "Expand quotations" if collapsed else "Collapse quotations"

@@ -15,6 +15,7 @@
   background: transparent;
 }
 
+.quotation-disclosure,
 .section-disclosure {
   transform: translate(0, 10px);
 }
