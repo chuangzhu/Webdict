@@ -50,6 +50,7 @@ class _ReadableHTML(HTMLParser):
         self.skip_depth = 0
         self.list_depth = 0
         self.active: list[str] = []
+        self.quotation_list_depth: int | None = None
 
     def _append(self, text: str) -> None:
         if not text:
@@ -78,6 +79,20 @@ class _ReadableHTML(HTMLParser):
             if tag not in self.VOID:
                 self.skip_depth += 1
             return
+        citation_container = "citation-whole" in classes
+        starts_quotation_group = citation_container and self.quotation_list_depth is None
+        if starts_quotation_group:
+            # The first citation is normally preceded by the nested list's
+            # bullet. Replace that structural marker with one group control;
+            # the renderer adds the line break when the group is expanded.
+            if self.runs:
+                trimmed = re.sub(r"\n\s*•\s*$", "", self.runs[-1].text)
+                self.runs[-1] = TextRun(trimmed, self.runs[-1].tags)
+                if not trimmed:
+                    self.runs.pop()
+            self._append(" ")
+            self.quotation_list_depth = self.list_depth
+            self.active.append("quotation")
         if tag in {"ul", "ol"}:
             self.list_depth += 1
             self._newline()
@@ -87,7 +102,7 @@ class _ReadableHTML(HTMLParser):
         elif tag in {"h2", "h3", "h4", "h5"}:
             self._newline()
             self.active.append(tag)
-        elif tag in {"p", "div", "dl", "dt", "dd"}:
+        elif tag in {"p", "div", "dl", "dt", "dd"} and not citation_container:
             self._newline()
         elif tag == "br":
             self._newline()
@@ -112,10 +127,19 @@ class _ReadableHTML(HTMLParser):
         if style in self.active:
             index = len(self.active) - 1 - self.active[::-1].index(style)
             self.active.pop(index)
+        closes_quotation_group = (
+            tag in {"ul", "ol"}
+            and self.quotation_list_depth is not None
+            and self.list_depth == self.quotation_list_depth
+        )
         if tag in {"ul", "ol"}:
             self.list_depth = max(0, self.list_depth - 1)
         if tag in self.BLOCKS:
             self._newline()
+        if closes_quotation_group:
+            if "quotation" in self.active:
+                self.active.remove("quotation")
+            self.quotation_list_depth = None
 
     def handle_data(self, data: str) -> None:
         if self.skip_depth:

@@ -62,6 +62,9 @@ class WebdictApplication(Adw.Application):
         self.definition_sections = []
         self.collapsed_sections = set()
         self.section_buttons = []
+        self.definition_quotations = []
+        self.collapsed_quotations = set()
+        self.quotation_buttons = []
         definition_click = Gtk.GestureClick.new()
         definition_click.set_button(Gdk.BUTTON_PRIMARY)
         definition_click.connect("released", self.on_definition_click)
@@ -192,6 +195,7 @@ class WebdictApplication(Adw.Application):
             "h3": {"weight": Pango.Weight.BOLD, "scale": 1.3, "pixels_above_lines": 8, "pixels_below_lines": 2},
             "h4": {"weight": Pango.Weight.BOLD, "scale": 1.15, "pixels_above_lines": 6},
             "h5": {"weight": Pango.Weight.BOLD},
+            "quotation": {"left_margin": 20, "right_margin": 12},
             "collapsed": {"invisible": True},
         }
         for name, properties in styles.items():
@@ -201,11 +205,15 @@ class WebdictApplication(Adw.Application):
         self.result_buffer.set_text("")
         self.definition_sections = []
         self.collapsed_sections = set()
-        for button in self.section_buttons:
+        self.definition_quotations = []
+        self.collapsed_quotations = set()
+        for button in self.section_buttons + self.quotation_buttons:
             if button.get_parent() is self.result:
                 self.result.remove(button)
         self.section_buttons = []
+        self.quotation_buttons = []
         heading_style = None
+        in_quotation = False
 
         def finish_heading() -> None:
             section_index = len(self.definition_sections) - 1
@@ -231,8 +239,11 @@ class WebdictApplication(Adw.Application):
 
         for run in entry.runs:
             run_heading = next((tag for tag in run.tags if tag in {"h2", "h3", "h4", "h5"}), None)
+            run_quotation = "quotation" in run.tags
             if heading_style and run_heading != heading_style:
                 finish_heading()
+            if in_quotation and not run_quotation:
+                self.definition_quotations[-1]["content_end"] = self.result_buffer.get_char_count()
             if run_heading and run_heading != heading_style:
                 heading_start = self.result_buffer.get_char_count()
                 self.definition_sections.append({
@@ -244,6 +255,32 @@ class WebdictApplication(Adw.Application):
                     "content_start": 0,
                     "content_end": 0,
                 })
+            if run_quotation and not in_quotation:
+                quotation_index = len(self.definition_quotations)
+                anchor = self.result_buffer.create_child_anchor(self.result_buffer.get_end_iter())
+                icon = Gtk.Image.new_from_icon_name("pan-down-symbolic")
+                label = Gtk.Label(label="quotations")
+                button_content = Gtk.Box(spacing=4)
+                button_content.append(label)
+                button_content.append(icon)
+                button = Gtk.Button(child=button_content, tooltip_text="Expand quotations", valign=Gtk.Align.CENTER)
+                button.add_css_class("flat")
+                button.add_css_class("quotation-disclosure")
+                button.connect(
+                    "clicked",
+                    lambda _button, index=quotation_index: self.toggle_definition_quotation(index),
+                )
+                self.result.add_child_at_anchor(button, anchor)
+                self.quotation_buttons.append(button)
+                self.result_buffer.insert(self.result_buffer.get_end_iter(), "\n")
+                content_start = self.result_buffer.get_char_count()
+                self.result_buffer.insert(self.result_buffer.get_end_iter(), "• ")
+                self.definition_quotations.append({
+                    "button": button,
+                    "icon": icon,
+                    "content_start": content_start,
+                    "content_end": 0,
+                })
             position = self.result_buffer.get_end_iter()
             if run.tags:
                 tags = [self.result_buffer.get_tag_table().lookup(name) for name in run.tags]
@@ -251,9 +288,12 @@ class WebdictApplication(Adw.Application):
             else:
                 self.result_buffer.insert(position, run.text)
             heading_style = run_heading
+            in_quotation = run_quotation
 
         if heading_style:
             finish_heading()
+        if in_quotation:
+            self.definition_quotations[-1]["content_end"] = self.result_buffer.get_char_count()
 
         total = self.result_buffer.get_char_count()
         for index, section in enumerate(self.definition_sections):
@@ -267,6 +307,10 @@ class WebdictApplication(Adw.Application):
                 for candidate in self.definition_sections[index + 1:]
                 if candidate["level"] <= section["level"]
             ), total)
+        self.collapsed_quotations = set(range(len(self.definition_quotations)))
+        self._apply_collapsed_sections()
+        for quotation in self.definition_quotations:
+            quotation["button"].set_tooltip_text("Expand quotations")
 
     def _apply_collapsed_sections(self) -> None:
         start = self.result_buffer.get_start_iter()
@@ -277,6 +321,27 @@ class WebdictApplication(Adw.Application):
             start = self.result_buffer.get_iter_at_offset(section["content_start"])
             end = self.result_buffer.get_iter_at_offset(section["content_end"])
             self.result_buffer.apply_tag_by_name("collapsed", start, end)
+        for index in self.collapsed_quotations:
+            quotation = self.definition_quotations[index]
+            start = self.result_buffer.get_iter_at_offset(quotation["content_start"])
+            end = self.result_buffer.get_iter_at_offset(quotation["content_end"])
+            self.result_buffer.apply_tag_by_name("collapsed", start, end)
+
+    def toggle_definition_quotation(self, quotation_index: int) -> bool:
+        if quotation_index in self.collapsed_quotations:
+            self.collapsed_quotations.remove(quotation_index)
+        else:
+            self.collapsed_quotations.add(quotation_index)
+        self._apply_collapsed_sections()
+        quotation = self.definition_quotations[quotation_index]
+        collapsed = quotation_index in self.collapsed_quotations
+        quotation["icon"].set_from_icon_name(
+            "pan-down-symbolic" if collapsed else "pan-up-symbolic"
+        )
+        quotation["button"].set_tooltip_text(
+            "Expand quotations" if collapsed else "Collapse quotations"
+        )
+        return GLib.SOURCE_REMOVE
 
     def _set_section_disclosure(self, section_index: int) -> None:
         section = self.definition_sections[section_index]
