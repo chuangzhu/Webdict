@@ -220,6 +220,7 @@ class WebdictApplication(Adw.Application):
                 )
                 button.add_css_class("flat")
                 button.add_css_class("circular")
+                button.add_css_class("section-disclosure")
                 button.connect(
                     "clicked",
                     lambda _button, index=section_index: self.toggle_definition_section(index),

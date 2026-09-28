@@ -14,3 +14,7 @@
   line-height: 1.35;
   background: transparent;
 }
+
+.section-disclosure {
+  transform: translate(0, 10px);
+}
