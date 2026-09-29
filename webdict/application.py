@@ -4,6 +4,7 @@ import sys
 import os
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+from urllib.request import ProxyHandler, build_opener, install_opener
 
 import gi
 
@@ -51,6 +52,10 @@ class WebdictApplication(Adw.Application):
             return
 
         self._load_resources()
+        proxies = Gio.ProxyResolver.get_default().lookup("https://www.wiktionary.org/", None)
+        proxy = proxies[0] if proxies else "direct://"
+        if proxy != "direct://":
+            install_opener(build_opener(ProxyHandler({"http": proxy, "https": proxy})))
         builder = Gtk.Builder.new_from_resource("/io/github/webdict/Webdict/window.ui")
         self.window = builder.get_object("window")
         self.window.set_application(self)
