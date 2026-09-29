@@ -40,6 +40,7 @@ class _ReadableHTML(HTMLParser):
         "mw-editsection", "mw-jump-link", "mw-empty-elt", "noprint",
         "metadata", "thumb", "NavFrame", "sister-project", "interproject",
         "thumbcaption", "gallery", "mw-file-element", "floatleft", "floatright",
+        "audiometa", "maintenance-line",
     }
     VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
     BLOCKS = {"h2", "h3", "h4", "h5", "p", "div", "dl", "dt", "dd", "ul", "ol"}

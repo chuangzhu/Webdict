@@ -15,7 +15,11 @@
   background: transparent;
 }
 
-.quotation-disclosure,
+.quotation-disclosure {
+  padding: 0 0.3em 0 0.6em;
+  transform: translate(0, 8px);
+}
+
 .section-disclosure {
   transform: translate(0, 10px);
 }
