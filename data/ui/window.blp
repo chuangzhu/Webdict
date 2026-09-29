@@ -66,25 +66,55 @@ Adw.ApplicationWindow window {
               hexpand: true;
             }
           }
-        };
-
-        [bottom]
-        Gtk.Box {
-          orientation: vertical;
-          spacing: 8;
-          margin-start: 24;
-          margin-end: 24;
-          margin-bottom: 18;
 
           Gtk.Separator {}
 
-          Gtk.Label {
-            styles ["dim-label"]
-            label: _("Definitions are sourced from the selected Wiktionary edition.");
-            wrap: true;
-            justify: center;
+          Gtk.Stack suggestion_stack {
+            vexpand: true;
+            transition-type: crossfade;
+
+            Gtk.StackPage {
+              name: "empty";
+              child: Gtk.Label {
+                styles ["dim-label"]
+                label: _("Definitions are sourced from the selected Wiktionary edition.");
+                wrap: true;
+                justify: center;
+                valign: center;
+                margin-start: 12;
+                margin-end: 12;
+              };
+            }
+            Gtk.StackPage {
+              name: "loading";
+              child: Gtk.Spinner {
+                spinning: true;
+                halign: center;
+                valign: center;
+              };
+            }
+            Gtk.StackPage {
+              name: "suggestions";
+              child: Gtk.Box {
+                orientation: vertical;
+                spacing: 8;
+                Gtk.Label {
+                  styles ["heading"]
+                  label: _("Suggestions");
+                  halign: start;
+                }
+                Gtk.ScrolledWindow {
+                  vexpand: true;
+                  hscrollbar-policy: never;
+                  Gtk.ListBox suggestion_list {
+                    styles ["navigation-sidebar"]
+                    selection-mode: none;
+                  }
+                }
+              };
+            }
           }
-        }
+        };
       };
     };
 

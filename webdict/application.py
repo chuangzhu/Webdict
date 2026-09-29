@@ -72,6 +72,8 @@ class WebdictApplication(Adw.Application):
         self.open_button = builder.get_object("open_button")
         self.retry_button = builder.get_object("retry_button")
         self.error_label = builder.get_object("error_label")
+        self.suggestion_stack = builder.get_object("suggestion_stack")
+        self.suggestion_list = builder.get_object("suggestion_list")
         self.current_url = None
         self.suggestion_timeout = None
         self.suggestion_generation = 0
@@ -83,27 +85,10 @@ class WebdictApplication(Adw.Application):
         self.edition.connect("notify::selected", self.on_search_changed)
         self.open_button.connect("clicked", self.on_open)
         self.retry_button.connect("clicked", self.on_search)
+        self.suggestion_list.connect("row-activated", self.on_suggestion_activated)
         builder.get_object("search_button").connect("clicked", self.on_search)
         self.window.present()
         self.search.grab_focus()
-
-        self.suggestion_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
-        self.suggestion_list.add_css_class("boxed-list")
-        self.suggestion_list.connect("row-activated", self.on_suggestion_activated)
-        suggestion_scroll = Gtk.ScrolledWindow(
-            child=self.suggestion_list,
-            hscrollbar_policy=Gtk.PolicyType.NEVER,
-            max_content_height=320,
-            propagate_natural_height=True,
-        )
-        self.suggestion_popover = Gtk.Popover(
-            child=suggestion_scroll,
-            autohide=True,
-            has_arrow=False,
-            position=Gtk.PositionType.BOTTOM,
-        )
-        self.suggestion_popover.add_css_class("menu")
-        self.suggestion_popover.set_parent(self.search)
 
     def on_search_changed(self, *_args) -> None:
         if self.suggestion_timeout is not None:
@@ -111,7 +96,7 @@ class WebdictApplication(Adw.Application):
             self.suggestion_timeout = None
         self.suggestion_generation += 1
         if len(self.search.get_text().strip()) < 2:
-            self.suggestion_popover.popdown()
+            self.suggestion_stack.set_visible_child_name("empty")
             return
         generation = self.suggestion_generation
         self.suggestion_timeout = GLib.timeout_add(250, self.request_suggestions, generation)
@@ -119,6 +104,7 @@ class WebdictApplication(Adw.Application):
     def request_suggestions(self, generation: int) -> bool:
         self.suggestion_timeout = None
         query = self.search.get_text().strip()
+        self.suggestion_stack.set_visible_child_name("loading")
         _name, code = EDITIONS[self.edition.get_selected()]
         future = self.executor.submit(search_suggestions, query, code)
         future.add_done_callback(
@@ -140,18 +126,13 @@ class WebdictApplication(Adw.Application):
             row = Gtk.ListBoxRow(child=label)
             row.suggestion = suggestion
             self.suggestion_list.append(row)
-        # Gtk.SearchEntry delegates keyboard focus to an internal GtkText.
-        # Checking search.has_focus() therefore incorrectly suppresses the
-        # popover even while the entry visibly has focus.
         if suggestions:
-            self.suggestion_popover.set_size_request(self.search.get_width(), -1)
-            self.suggestion_popover.popup()
+            self.suggestion_stack.set_visible_child_name("suggestions")
         else:
-            self.suggestion_popover.popdown()
+            self.suggestion_stack.set_visible_child_name("empty")
         return GLib.SOURCE_REMOVE
 
     def on_suggestion_activated(self, _list, row) -> None:
-        self.suggestion_popover.popdown()
         self.search.set_text(row.suggestion)
         self.search.set_position(-1)
         self.on_search()
@@ -378,7 +359,6 @@ class WebdictApplication(Adw.Application):
             self.search.add_css_class("error")
             return
         self.search.remove_css_class("error")
-        self.suggestion_popover.popdown()
         self.suggestion_generation += 1
         if self.suggestion_timeout is not None:
             GLib.source_remove(self.suggestion_timeout)
