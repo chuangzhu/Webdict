@@ -40,17 +40,10 @@ Adw.ApplicationWindow window {
           orientation: vertical;
           spacing: 18;
 
-          Gtk.Box {
-            styles ["linked", "search-box"]
-            Gtk.SearchEntry search_entry {
-              placeholder-text: _("Enter a word…");
-              hexpand: true;
-            }
-            Gtk.Button search_button {
-              styles ["suggested-action"]
-              icon-name: "system-search-symbolic";
-              tooltip-text: _("Search");
-            }
+          Gtk.SearchEntry search_entry {
+            styles ["search-box"]
+            placeholder-text: _("Enter a word…");
+            hexpand: true;
           }
 
           Gtk.Box {

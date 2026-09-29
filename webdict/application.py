@@ -86,7 +86,6 @@ class WebdictApplication(Adw.Application):
         self.open_button.connect("clicked", self.on_open)
         self.retry_button.connect("clicked", self.on_search)
         self.suggestion_list.connect("row-activated", self.on_suggestion_activated)
-        builder.get_object("search_button").connect("clicked", self.on_search)
         self.window.present()
         self.search.grab_focus()
 
@@ -95,9 +94,6 @@ class WebdictApplication(Adw.Application):
             GLib.source_remove(self.suggestion_timeout)
             self.suggestion_timeout = None
         self.suggestion_generation += 1
-        if len(self.search.get_text().strip()) < 2:
-            self.suggestion_stack.set_visible_child_name("empty")
-            return
         generation = self.suggestion_generation
         self.suggestion_timeout = GLib.timeout_add(250, self.request_suggestions, generation)
 
