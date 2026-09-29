@@ -35,6 +35,10 @@ class WebdictApplication(Adw.Application):
         about = Gio.SimpleAction.new("about", None)
         about.connect("activate", self.on_about)
         self.add_action(about)
+        self.open_wiktionary_action = Gio.SimpleAction.new("open-wiktionary", None)
+        self.open_wiktionary_action.set_enabled(False)
+        self.open_wiktionary_action.connect("activate", self.on_open)
+        self.add_action(self.open_wiktionary_action)
         quit_action = Gio.SimpleAction.new("quit", None)
         quit_action.connect("activate", lambda *_: self.quit())
         self.add_action(quit_action)
@@ -69,7 +73,6 @@ class WebdictApplication(Adw.Application):
         definition_click.set_button(Gdk.BUTTON_PRIMARY)
         definition_click.connect("released", self.on_definition_click)
         self.result.add_controller(definition_click)
-        self.open_button = builder.get_object("open_button")
         self.retry_button = builder.get_object("retry_button")
         self.error_label = builder.get_object("error_label")
         self.suggestion_stack = builder.get_object("suggestion_stack")
@@ -83,7 +86,6 @@ class WebdictApplication(Adw.Application):
         self.search.connect("activate", self.on_search)
         self.search.connect("search-changed", self.on_search_changed)
         self.edition.connect("notify::selected", self.on_search_changed)
-        self.open_button.connect("clicked", self.on_open)
         self.retry_button.connect("clicked", self.on_search)
         self.suggestion_list.connect("row-activated", self.on_suggestion_activated)
         self.window.present()
@@ -361,6 +363,8 @@ class WebdictApplication(Adw.Application):
             self.suggestion_timeout = None
         edition_name, code = EDITIONS[self.edition.get_selected()]
         self.stack.set_visible_child_name("loading")
+        self.open_wiktionary_action.set_enabled(False)
+        self.current_url = None
         self.split_view.set_show_content(True)
         self.search.set_sensitive(False)
         future = self.executor.submit(lookup, word, code)
@@ -379,6 +383,7 @@ class WebdictApplication(Adw.Application):
             self.subtitle.set_label(f"From {edition_name} Wiktionary")
             self._render_entry(entry)
             self.current_url = entry.url
+            self.open_wiktionary_action.set_enabled(True)
             self.stack.set_visible_child_name("result")
         return GLib.SOURCE_REMOVE
 

@@ -117,6 +117,12 @@ Adw.ApplicationWindow window {
         [top]
         Adw.HeaderBar {
           title-widget: Adw.WindowTitle { title: _("Definition"); };
+          [end]
+          Gtk.MenuButton {
+            icon-name: "view-more-symbolic";
+            tooltip-text: _("Definition Menu");
+            menu-model: definition_menu;
+          }
         }
 
         content: Gtk.Stack content_stack {
@@ -180,12 +186,6 @@ Adw.ApplicationWindow window {
                     halign: start;
                   }
                 }
-                Gtk.Button open_button {
-                  styles ["flat"]
-                  icon-name: "external-link-symbolic";
-                  tooltip-text: _("Open on Wiktionary");
-                  valign: center;
-                }
               }
               Gtk.ScrolledWindow {
                 vexpand: true;
@@ -213,4 +213,8 @@ Adw.ApplicationWindow window {
 menu main_menu {
   item (_("About Webdict"), "app.about")
   item (_("Quit"), "app.quit")
+}
+
+menu definition_menu {
+  item (_("Open on Wiktionary"), "app.open-wiktionary")
 }
