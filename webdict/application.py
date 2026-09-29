@@ -58,8 +58,7 @@ class WebdictApplication(Adw.Application):
         self.split_view = builder.get_object("split_view")
         self.edition = builder.get_object("edition_dropdown")
         self.stack = builder.get_object("content_stack")
-        self.title = builder.get_object("result_title")
-        self.subtitle = builder.get_object("result_subtitle")
+        self.title = builder.get_object("title")
         self.result = builder.get_object("result_text")
         self.result_buffer = self.result.get_buffer()
         self._create_text_styles()
@@ -357,6 +356,7 @@ class WebdictApplication(Adw.Application):
             self.search.add_css_class("error")
             return
         self.search.remove_css_class("error")
+        self.title.set_title(word)
         self.suggestion_generation += 1
         if self.suggestion_timeout is not None:
             GLib.source_remove(self.suggestion_timeout)
@@ -379,8 +379,6 @@ class WebdictApplication(Adw.Application):
             self.error_label.set_label(message)
             self.stack.set_visible_child_name("error")
         else:
-            self.title.set_label(entry.title)
-            self.subtitle.set_label(f"From {edition_name} Wiktionary")
             self._render_entry(entry)
             self.current_url = entry.url
             self.open_wiktionary_action.set_enabled(True)
