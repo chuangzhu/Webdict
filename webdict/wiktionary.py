@@ -212,7 +212,7 @@ def lookup(word: str, edition: str) -> Entry:
     )
 
 
-def search_suggestions(query: str, edition: str, limit: int = 16) -> tuple[str, ...]:
+def search_suggestions(query: str, edition: str, limit: int = 20) -> tuple[str, ...]:
     """Return title completions from a Wiktionary edition's search API."""
     if not query.strip():
         return ()
