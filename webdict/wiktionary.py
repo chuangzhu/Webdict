@@ -118,6 +118,11 @@ class _ReadableHTML(HTMLParser):
 
     def handle_endtag(self, tag: str) -> None:
         if self.skip_depth:
+            # Some MediaWiki HTML serializes void elements as <img/> or even
+            # <img></img>. That closing event must not close the surrounding
+            # skipped container.
+            if tag in self.VOID:
+                return
             self.skip_depth = max(0, self.skip_depth - 1)
             return
         style = {
