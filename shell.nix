@@ -24,11 +24,9 @@ pkgs.mkShell {
     pkg-config
     gettext
     desktop-file-utils
-  ];
 
-  # Makes GTK/libadwaita GSettings schemas and other shared data visible when
-  # running the application directly from this development shell.
-  shellHook = ''
-    export XDG_DATA_DIRS="${pkgs.gtk4}/share:${pkgs.libadwaita}/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
-  '';
+    flatpak
+    flatpak-builder
+    appstream
+  ];
 }

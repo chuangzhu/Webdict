@@ -22,3 +22,12 @@ meson setup build --prefix=$prefix
 meson install -C build
 webdict
 ```
+
+## Build the Flatpak
+
+```sh
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install --user flathub org.gnome.Platform//51 org.gnome.Sdk//51
+flatpak-builder --user --install --force-clean build-flatpak cz.chuang.Webdict.yml
+flatpak run cz.chuang.Webdict
+```
