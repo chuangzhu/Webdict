@@ -327,14 +327,11 @@ class WebdictApplication(Adw.Application):
 
     def on_audio_clicked(self, button) -> None:
         if button.player is None:
-            print(button.audio_url)
-            button.player = Gst.ElementFactory.make("playbin", None)
+            button.player = self._create_audio_pipeline(button.audio_url)
             if button.player is None:
-                print("oops")
                 button.set_sensitive(False)
                 button.set_tooltip_text("Audio playback is unavailable")
                 return
-            button.player.set_property("uri", button.audio_url)
             button.bus = button.player.get_bus()
             button.bus.add_signal_watch()
             button.bus.connect("message", self.on_audio_message, button)
@@ -351,6 +348,35 @@ class WebdictApplication(Adw.Application):
             self._stop_active_audio("Audio playback failed")
             return
         self._set_audio_button_playing(button, True)
+
+    def _create_audio_pipeline(self, url: str):
+        pipeline = Gst.Pipeline.new(None)
+        source = Gst.ElementFactory.make("curlhttpsrc", None)
+        decoder = Gst.ElementFactory.make("decodebin", None)
+        converter = Gst.ElementFactory.make("audioconvert", None)
+        resampler = Gst.ElementFactory.make("audioresample", None)
+        sink = Gst.ElementFactory.make("autoaudiosink", None)
+        elements = (source, decoder, converter, resampler, sink)
+        if pipeline is None or any(element is None for element in elements):
+            return None
+        source.set_property("location", url)
+        source.set_property("user-agent", "Webdict/0.1")
+        for element in elements:
+            pipeline.add(element)
+        if not source.link(decoder) or not converter.link(resampler) or not resampler.link(sink):
+            pipeline.set_state(Gst.State.NULL)
+            return None
+        decoder.connect("pad-added", self.on_audio_pad_added, converter)
+        return pipeline
+
+    def on_audio_pad_added(self, _decoder, source_pad, converter) -> None:
+        sink_pad = converter.get_static_pad("sink")
+        if sink_pad is None or sink_pad.is_linked():
+            return
+        caps = source_pad.get_current_caps() or source_pad.query_caps(None)
+        structure = caps.get_structure(0) if caps and caps.get_size() else None
+        if structure and structure.get_name().startswith("audio/"):
+            source_pad.link(sink_pad)
 
     def on_audio_message(self, _bus, message, button) -> None:
         if message.type == Gst.MessageType.EOS:
