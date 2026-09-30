@@ -16,3 +16,9 @@
 .section-disclosure {
   transform: translate(0, 10px);
 }
+
+.audio-button {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 2px;
+}

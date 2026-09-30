@@ -73,6 +73,8 @@ class WebdictApplication(Adw.Application):
         self.definition_quotations = []
         self.collapsed_quotations = set()
         self.quotation_buttons = []
+        self.audio_buttons = []
+        self.active_audio = None
         definition_click = Gtk.GestureClick.new()
         definition_click.set_button(Gdk.BUTTON_PRIMARY)
         definition_click.connect("released", self.on_definition_click)
@@ -190,11 +192,15 @@ class WebdictApplication(Adw.Application):
         self.collapsed_sections = set()
         self.definition_quotations = []
         self.collapsed_quotations = set()
-        for button in self.section_buttons + self.quotation_buttons:
+        if self.active_audio is not None:
+            self.active_audio.pause()
+            self.active_audio = None
+        for button in self.section_buttons + self.quotation_buttons + self.audio_buttons:
             if button.get_parent() is self.result:
                 self.result.remove(button)
         self.section_buttons = []
         self.quotation_buttons = []
+        self.audio_buttons = []
         heading_style = None
         in_quotation = False
 
@@ -264,11 +270,26 @@ class WebdictApplication(Adw.Application):
                     "content_start": content_start,
                     "content_end": 0,
                 })
+            if run.audio_url:
+                anchor = self.result_buffer.create_child_anchor(self.result_buffer.get_end_iter())
+                button = Gtk.Button(
+                    icon_name="audio-volume-high-symbolic",
+                    tooltip_text="Play pronunciation",
+                    valign=Gtk.Align.CENTER,
+                )
+                button.add_css_class("flat")
+                button.add_css_class("circular")
+                button.add_css_class("audio-button")
+                button.audio_url = run.audio_url
+                button.media = None
+                button.connect("clicked", self.on_audio_clicked)
+                self.result.add_child_at_anchor(button, anchor)
+                self.audio_buttons.append(button)
             position = self.result_buffer.get_end_iter()
-            if run.tags:
+            if run.text and run.tags:
                 tags = [self.result_buffer.get_tag_table().lookup(name) for name in run.tags]
                 self.result_buffer.insert_with_tags(position, run.text, *tags)
-            else:
+            elif run.text:
                 self.result_buffer.insert(position, run.text)
             heading_style = run_heading
             in_quotation = run_quotation
@@ -294,6 +315,26 @@ class WebdictApplication(Adw.Application):
         self._apply_collapsed_sections()
         for quotation in self.definition_quotations:
             quotation["button"].set_tooltip_text("Expand quotations")
+
+    def on_audio_clicked(self, button) -> None:
+        if button.media is None:
+            button.media = Gtk.MediaFile.new_for_file(Gio.File.new_for_uri(button.audio_url))
+            button.media.connect("notify::playing", self.on_audio_playing_changed, button)
+            button.media.connect("notify::ended", self.on_audio_playing_changed, button)
+        if button.media.get_playing():
+            button.media.pause()
+            return
+        if self.active_audio is not None and self.active_audio is not button.media:
+            self.active_audio.pause()
+        self.active_audio = button.media
+        button.media.play()
+
+    def on_audio_playing_changed(self, media, _property, button) -> None:
+        playing = media.get_playing() and not media.get_ended()
+        button.set_icon_name(
+            "media-playback-pause-symbolic" if playing else "audio-volume-high-symbolic"
+        )
+        button.set_tooltip_text("Pause pronunciation" if playing else "Play pronunciation")
 
     def _apply_collapsed_sections(self) -> None:
         start = self.result_buffer.get_start_iter()
@@ -362,6 +403,9 @@ class WebdictApplication(Adw.Application):
             return
         self.search.remove_css_class("error")
         self.title.set_title(word)
+        if self.active_audio is not None:
+            self.active_audio.pause()
+            self.active_audio = None
         self.suggestion_generation += 1
         if self.suggestion_timeout is not None:
             GLib.source_remove(self.suggestion_timeout)

@@ -22,6 +22,7 @@ class WiktionaryError(Exception):
 class TextRun:
     text: str
     tags: tuple[str, ...] = ()
+    audio_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -52,19 +53,20 @@ class _ReadableHTML(HTMLParser):
         self.list_depth = 0
         self.active: list[str] = []
         self.quotation_list_depth: int | None = None
+        self.audio_sources: list[tuple[str, str]] | None = None
 
     def _append(self, text: str) -> None:
         if not text:
             return
         tags = tuple(self.active)
-        if self.runs and self.runs[-1].tags == tags:
+        if self.runs and self.runs[-1].tags == tags and self.runs[-1].audio_url is None:
             previous = self.runs[-1]
             self.runs[-1] = TextRun(previous.text + text, tags)
         else:
             self.runs.append(TextRun(text, tags))
 
     def _newline(self, count: int = 1) -> None:
-        while self.runs and not self.runs[-1].text:
+        while self.runs and not self.runs[-1].text and not self.runs[-1].audio_url:
             self.runs.pop()
         existing = 0
         if self.runs:
@@ -75,6 +77,14 @@ class _ReadableHTML(HTMLParser):
     def handle_starttag(self, tag: str, attrs) -> None:
         attributes = dict(attrs)
         classes = set(attributes.get("class", "").split())
+        if tag == "audio":
+            self.audio_sources = []
+        elif tag == "source" and self.audio_sources is not None:
+            source = attributes.get("src", "")
+            if source:
+                if source.startswith("//"):
+                    source = "https:" + source
+                self.audio_sources.append((attributes.get("type", ""), source))
         should_skip = tag in self.SKIP or bool(classes & self.SKIP_CLASSES)
         if self.skip_depth or should_skip:
             if tag not in self.VOID:
@@ -88,7 +98,8 @@ class _ReadableHTML(HTMLParser):
             # the renderer adds the line break when the group is expanded.
             if self.runs:
                 trimmed = re.sub(r"\n\s*•\s*$", "", self.runs[-1].text)
-                self.runs[-1] = TextRun(trimmed, self.runs[-1].tags)
+                previous = self.runs[-1]
+                self.runs[-1] = TextRun(trimmed, previous.tags, previous.audio_url)
                 if not trimmed:
                     self.runs.pop()
             self._append(" ")
@@ -117,6 +128,15 @@ class _ReadableHTML(HTMLParser):
             self.active.append("link")
 
     def handle_endtag(self, tag: str) -> None:
+        if tag == "audio" and self.audio_sources is not None:
+            preferred = next(
+                (url for media_type, url in self.audio_sources if media_type.startswith("audio/mpeg")),
+                next((url for media_type, url in self.audio_sources if media_type.startswith("audio/ogg")),
+                     self.audio_sources[0][1] if self.audio_sources else None),
+            )
+            if preferred:
+                self.runs.append(TextRun("", tuple(self.active), preferred))
+            self.audio_sources = None
         if self.skip_depth:
             # Some MediaWiki HTML serializes void elements as <img/> or even
             # <img></img>. That closing event must not close the surrounding
@@ -160,14 +180,14 @@ class _ReadableHTML(HTMLParser):
 
     def rich_text(self) -> tuple[TextRun, ...]:
         runs = list(self.runs)
-        while runs and not runs[0].text.strip():
+        while runs and not runs[0].text.strip() and not runs[0].audio_url:
             runs.pop(0)
-        while runs and not runs[-1].text.strip():
+        while runs and not runs[-1].text.strip() and not runs[-1].audio_url:
             runs.pop()
         if runs:
-            runs[0] = TextRun(runs[0].text.lstrip(), runs[0].tags)
-            runs[-1] = TextRun(runs[-1].text.rstrip(), runs[-1].tags)
-        return tuple(run for run in runs if run.text)
+            runs[0] = TextRun(runs[0].text.lstrip(), runs[0].tags, runs[0].audio_url)
+            runs[-1] = TextRun(runs[-1].text.rstrip(), runs[-1].tags, runs[-1].audio_url)
+        return tuple(run for run in runs if run.text or run.audio_url)
 
 
 def _get_json(host: str, params: dict[str, str], timeout: int = 15):
