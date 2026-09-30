@@ -16,10 +16,12 @@
   <summary xml:lang="nl">Ontdek woorden in WikiWoordenboek</summary>
   <summary xml:lang="pl">Odkrywaj słowa w Wikisłowniku</summary>
   <summary xml:lang="pt">Explore palavras no Wikcionário</summary>
+  <summary xml:lang="pt-BR">Explore palavras no Wikcionário</summary>
   <summary xml:lang="ru">Исследуйте слова в Викисловаре</summary>
   <summary xml:lang="uk">Досліджуйте слова у Вікісловнику</summary>
   <summary xml:lang="vi">Khám phá từ ngữ trên Wiktionary</summary>
   <summary xml:lang="zh">探索维基词典中的词语</summary>
+  <summary xml:lang="zh-TW">探索維基詞典中的詞語</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <description>
@@ -37,10 +39,12 @@
     <p xml:lang="nl">Webdict is een overzichtelijk bureaubladwoordenboek dat meertalige WikiWoordenboek-edities gebruikt.</p>
     <p xml:lang="pl">Webdict to przejrzysty słownik komputerowy korzystający z wielu wersji językowych Wikisłownika.</p>
     <p xml:lang="pt">O Webdict é um dicionário simples para o ambiente de trabalho, baseado nas edições multilíngues do Wikcionário.</p>
+    <p xml:lang="pt-BR">O Webdict é um dicionário simples para desktop, baseado nas edições multilíngues do Wikcionário.</p>
     <p xml:lang="ru">Webdict — удобный настольный словарь на основе многоязычных разделов Викисловаря.</p>
     <p xml:lang="uk">Webdict — зручний словник для стільниці на основі багатомовних розділів Вікісловника.</p>
     <p xml:lang="vi">Webdict là từ điển máy tính gọn gàng sử dụng các phiên bản Wiktionary đa ngôn ngữ.</p>
     <p xml:lang="zh">Webdict 是一款由多语言维基词典提供内容的简洁桌面词典。</p>
+    <p xml:lang="zh-TW">Webdict 是一款由多語言維基詞典提供內容的簡潔桌面辭典。</p>
   </description>
   <launchable type="desktop-id">cz.chuang.Webdict.desktop</launchable>
   <provides><binary>webdict</binary></provides>
