@@ -24,6 +24,7 @@ python.install_sources(
   'webdict/__init__.py',
   'webdict/application.py',
   'webdict/wiktionary.py',
+  'webdict/quirks.py',
   subdir: 'webdict',
 )
 

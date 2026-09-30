@@ -18,6 +18,7 @@
 }
 
 .audio-button {
+  transform: translate(0, 10px);
   min-width: 24px;
   min-height: 24px;
   padding: 2px;

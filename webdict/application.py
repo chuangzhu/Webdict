@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import sys
 import os
+import logging
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-from urllib.request import ProxyHandler, build_opener, install_opener
 
 import gi
 
@@ -13,21 +13,7 @@ gi.require_version("Adw", "1")
 gi.require_version("Gst", "1.0")
 from gi.repository import Adw, Gdk, Gio, GLib, Gst, Gtk, Pango
 
-Gst.init(None)
-
-
-def _prefer_curl_http_source() -> None:
-    curl_source = Gst.ElementFactory.find("curlhttpsrc")
-    soup_source = Gst.ElementFactory.find("souphttpsrc")
-    if curl_source is not None:
-        curl_source.set_rank(int(Gst.Rank.PRIMARY) + 1)
-    if soup_source is not None:
-        soup_source.set_rank(Gst.Rank.MARGINAL)
-
-
-_prefer_curl_http_source()
-
-from . import __version__
+from . import __version__, quirks
 from .wiktionary import Entry, WiktionaryError, lookup, search_suggestions
 
 
@@ -67,10 +53,6 @@ class WebdictApplication(Adw.Application):
             return
 
         self._load_resources()
-        proxies = Gio.ProxyResolver.get_default().lookup("https://www.wiktionary.org/", None)
-        proxy = proxies[0] if proxies else "direct://"
-        if proxy != "direct://":
-            install_opener(build_opener(ProxyHandler({"http": proxy, "https": proxy})))
         builder = Gtk.Builder.new_from_resource("/io/github/webdict/Webdict/window.ui")
         self.window = builder.get_object("window")
         self.window.set_application(self)
@@ -340,6 +322,7 @@ class WebdictApplication(Adw.Application):
     def on_audio_clicked(self, button) -> None:
         if button.player is None:
             button.player = self._create_audio_pipeline(button.audio_url)
+            logging.info("Playing %s", button.audio_url)
             if button.player is None:
                 button.set_sensitive(False)
                 button.set_tooltip_text("Audio playback is unavailable")
@@ -365,6 +348,7 @@ class WebdictApplication(Adw.Application):
         player = Gst.ElementFactory.make("playbin", None)
         if player is not None:
             player.set_property("uri", url)
+            player.set_property("buffer-duration", 10 * Gst.SECOND)
         return player
 
     def on_audio_message(self, _bus, message, button) -> None:
@@ -515,6 +499,10 @@ class WebdictApplication(Adw.Application):
 
 
 def main() -> int:
+    logging.basicConfig(level=logging.INFO)
+    Gst.init(None)
+    quirks.gst_prefer_curl_http_source()
+    quirks.urllib_honor_gnome_proxy_settings()
     return WebdictApplication().run(sys.argv)
 
 
