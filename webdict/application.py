@@ -10,7 +10,10 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango
+gi.require_version("Gst", "1.0")
+from gi.repository import Adw, Gdk, Gio, GLib, Gst, Gtk, Pango
+
+Gst.init(None)
 
 from . import __version__
 from .wiktionary import Entry, WiktionaryError, lookup, search_suggestions
@@ -31,7 +34,7 @@ class WebdictApplication(Adw.Application):
         super().__init__(application_id="io.github.webdict.Webdict", flags=Gio.ApplicationFlags.DEFAULT_FLAGS)
         self.executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="webdict")
         self.connect("activate", self.on_activate)
-        self.connect("shutdown", lambda *_: self.executor.shutdown(wait=False, cancel_futures=True))
+        self.connect("shutdown", self.on_shutdown)
 
         about = Gio.SimpleAction.new("about", None)
         about.connect("activate", self.on_about)
@@ -75,6 +78,7 @@ class WebdictApplication(Adw.Application):
         self.quotation_buttons = []
         self.audio_buttons = []
         self.active_audio = None
+        self.active_audio_button = None
         definition_click = Gtk.GestureClick.new()
         definition_click.set_button(Gdk.BUTTON_PRIMARY)
         definition_click.connect("released", self.on_definition_click)
@@ -193,8 +197,11 @@ class WebdictApplication(Adw.Application):
         self.definition_quotations = []
         self.collapsed_quotations = set()
         if self.active_audio is not None:
-            self.active_audio.pause()
-            self.active_audio = None
+            self._stop_active_audio()
+        for button in self.audio_buttons:
+            if button.player is not None:
+                button.player.set_state(Gst.State.NULL)
+                button.bus.remove_signal_watch()
         for button in self.section_buttons + self.quotation_buttons + self.audio_buttons:
             if button.get_parent() is self.result:
                 self.result.remove(button)
@@ -281,7 +288,9 @@ class WebdictApplication(Adw.Application):
                 button.add_css_class("circular")
                 button.add_css_class("audio-button")
                 button.audio_url = run.audio_url
-                button.media = None
+                button.player = None
+                button.bus = None
+                button.playing = False
                 button.connect("clicked", self.on_audio_clicked)
                 self.result.add_child_at_anchor(button, anchor)
                 self.audio_buttons.append(button)
@@ -317,24 +326,65 @@ class WebdictApplication(Adw.Application):
             quotation["button"].set_tooltip_text("Expand quotations")
 
     def on_audio_clicked(self, button) -> None:
-        if button.media is None:
-            button.media = Gtk.MediaFile.new_for_file(Gio.File.new_for_uri(button.audio_url))
-            button.media.connect("notify::playing", self.on_audio_playing_changed, button)
-            button.media.connect("notify::ended", self.on_audio_playing_changed, button)
-        if button.media.get_playing():
-            button.media.pause()
+        if button.player is None:
+            print(button.audio_url)
+            button.player = Gst.ElementFactory.make("playbin", None)
+            if button.player is None:
+                print("oops")
+                button.set_sensitive(False)
+                button.set_tooltip_text("Audio playback is unavailable")
+                return
+            button.player.set_property("uri", button.audio_url)
+            button.bus = button.player.get_bus()
+            button.bus.add_signal_watch()
+            button.bus.connect("message", self.on_audio_message, button)
+        if button.playing:
+            button.player.set_state(Gst.State.PAUSED)
+            self._set_audio_button_playing(button, False)
             return
-        if self.active_audio is not None and self.active_audio is not button.media:
-            self.active_audio.pause()
-        self.active_audio = button.media
-        button.media.play()
+        if self.active_audio is not None and self.active_audio is not button.player:
+            self._stop_active_audio()
+        self.active_audio = button.player
+        self.active_audio_button = button
+        result = button.player.set_state(Gst.State.PLAYING)
+        if result == Gst.StateChangeReturn.FAILURE:
+            self._stop_active_audio("Audio playback failed")
+            return
+        self._set_audio_button_playing(button, True)
 
-    def on_audio_playing_changed(self, media, _property, button) -> None:
-        playing = media.get_playing() and not media.get_ended()
+    def on_audio_message(self, _bus, message, button) -> None:
+        if message.type == Gst.MessageType.EOS:
+            button.player.set_state(Gst.State.NULL)
+            self._set_audio_button_playing(button, False)
+            if self.active_audio is button.player:
+                self.active_audio = None
+                self.active_audio_button = None
+        elif message.type == Gst.MessageType.ERROR:
+            button.player.set_state(Gst.State.NULL)
+            self._set_audio_button_playing(button, False, "Audio playback failed")
+            if self.active_audio is button.player:
+                self.active_audio = None
+                self.active_audio_button = None
+
+    def _set_audio_button_playing(self, button, playing: bool, error: str | None = None) -> None:
+        button.playing = playing
         button.set_icon_name(
             "media-playback-pause-symbolic" if playing else "audio-volume-high-symbolic"
         )
-        button.set_tooltip_text("Pause pronunciation" if playing else "Play pronunciation")
+        button.set_tooltip_text(error or ("Pause pronunciation" if playing else "Play pronunciation"))
+
+    def _stop_active_audio(self, error: str | None = None) -> None:
+        if self.active_audio is not None:
+            self.active_audio.set_state(Gst.State.NULL)
+        if self.active_audio_button is not None:
+            self._set_audio_button_playing(self.active_audio_button, False, error)
+        self.active_audio = None
+        self.active_audio_button = None
+
+    def on_shutdown(self, *_args) -> None:
+        if getattr(self, "active_audio", None) is not None:
+            self._stop_active_audio()
+        self.executor.shutdown(wait=False, cancel_futures=True)
 
     def _apply_collapsed_sections(self) -> None:
         start = self.result_buffer.get_start_iter()
@@ -404,8 +454,7 @@ class WebdictApplication(Adw.Application):
         self.search.remove_css_class("error")
         self.title.set_title(word)
         if self.active_audio is not None:
-            self.active_audio.pause()
-            self.active_audio = None
+            self._stop_active_audio()
         self.suggestion_generation += 1
         if self.suggestion_timeout is not None:
             GLib.source_remove(self.suggestion_timeout)
