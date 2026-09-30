@@ -2,6 +2,8 @@
 
 A focused GTK 4/libadwaita dictionary client for multilingual Wiktionary editions.
 
+![Screenshot](https://github.com/user-attachments/assets/66145b1f-22c3-4216-b1b2-97bc504362fc)
+
 Webdict uses the standard MediaWiki API of the selected Wiktionary edition—for example,
 `fr.wiktionary.org` for French—and is not tied to the English-only API.
 

@@ -18,7 +18,7 @@
 
 python3.pkgs.buildPythonApplication {
   pname = "webdict";
-  version = "0-unstable-2026-09-30";
+  version = "0.1.0-unstable-2026-09-30";
 
   format = "other";
 
