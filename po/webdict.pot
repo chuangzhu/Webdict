@@ -1,0 +1,169 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the webdict package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: webdict\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-30 17:12+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: data/ui/window.blp:5 data/ui/window.blp:28
+msgid "Webdict"
+msgstr ""
+
+#: data/ui/window.blp:22
+msgid "Search"
+msgstr ""
+
+#: data/ui/window.blp:33
+msgid "Wiktionary language edition"
+msgstr ""
+
+#: data/ui/window.blp:40
+msgid "Main Menu"
+msgstr ""
+
+#: data/ui/window.blp:52
+msgid "Enter a word…"
+msgstr ""
+
+#: data/ui/window.blp:64
+msgid "Definitions are sourced from the selected Wiktionary edition."
+msgstr ""
+
+#: data/ui/window.blp:97 data/ui/window.blp:101
+msgid "Definition"
+msgstr ""
+
+#: data/ui/window.blp:105
+msgid "Definition Menu"
+msgstr ""
+
+#: data/ui/window.blp:118
+msgid "A world of words"
+msgstr ""
+
+#: data/ui/window.blp:119
+msgid "Choose an edition and start exploring."
+msgstr ""
+
+#: data/ui/window.blp:130
+msgid "Looking it up…"
+msgstr ""
+
+#: data/ui/window.blp:137
+msgid "No definition here"
+msgstr ""
+
+#: data/ui/window.blp:138
+msgid "Check the spelling or try another edition."
+msgstr ""
+
+#: data/ui/window.blp:145
+msgid "Try Again"
+msgstr ""
+
+#: data/ui/window.blp:176
+msgid "About Webdict"
+msgstr ""
+
+#: data/ui/window.blp:177
+msgid "Quit"
+msgstr ""
+
+#: data/ui/window.blp:181
+msgid "Open on Wiktionary"
+msgstr ""
+
+#: webdict/application.py:218 webdict/application.py:429
+msgid "Collapse section"
+msgstr ""
+
+#: webdict/application.py:255
+msgid "quotations"
+msgstr ""
+
+#: webdict/application.py:259 webdict/application.py:323
+#: webdict/application.py:418
+msgid "Expand quotations"
+msgstr ""
+
+#: webdict/application.py:281 webdict/application.py:376
+msgid "Play pronunciation"
+msgstr ""
+
+#: webdict/application.py:331
+msgid "Audio playback is unavailable"
+msgstr ""
+
+#: webdict/application.py:346 webdict/application.py:366
+msgid "Audio playback failed"
+msgstr ""
+
+#: webdict/application.py:376
+msgid "Pause pronunciation"
+msgstr ""
+
+#: webdict/application.py:418
+msgid "Collapse quotations"
+msgstr ""
+
+#: webdict/application.py:429
+msgid "Expand section"
+msgstr ""
+
+#: webdict/application.py:441
+msgid "Webdict resources were not found; run `meson compile -C build` first."
+msgstr ""
+
+#: webdict/application.py:478
+msgid "Something unexpected went wrong."
+msgstr ""
+
+#: webdict/application.py:496
+msgid "Webdict contributors"
+msgstr ""
+
+#: webdict/application.py:498
+msgid "A focused dictionary for every Wiktionary edition."
+msgstr ""
+
+#: webdict/application.py:503
+msgid "Dictionary Data and Infrastructure"
+msgstr ""
+
+#: webdict/application.py:504
+msgid "Wiktionary contributors"
+msgstr ""
+
+#: webdict/application.py:504
+msgid "Wikimedia Foundation"
+msgstr ""
+
+#: webdict/wiktionary.py:202
+#, python-brace-format
+msgid "Wiktionary returned HTTP {code}."
+msgstr ""
+
+#: webdict/wiktionary.py:204
+msgid "Could not connect to Wiktionary."
+msgstr ""
+
+#: webdict/wiktionary.py:222
+#, python-brace-format
+msgid "No entry found for “{word}”."
+msgstr ""
+
+#: webdict/wiktionary.py:223
+msgid "Wiktionary returned an error."
+msgstr ""

@@ -1,7 +1,10 @@
 project('webdict', version: '0.1.0', meson_version: '>= 0.62.0')
 
 gnome = import('gnome')
+i18n = import('i18n')
 python = import('python').find_installation('python3')
+
+subdir('po')
 
 blueprints = custom_target(
   'blueprints',
@@ -25,6 +28,7 @@ python.install_sources(
   'webdict/application.py',
   'webdict/wiktionary.py',
   'webdict/quirks.py',
+  'webdict/i18n.py',
   subdir: 'webdict',
 )
 
@@ -35,7 +39,10 @@ install_data('data/icons/cz.chuang.Webdict.svg', install_dir: get_option('datadi
 configure_file(
   input: 'webdict.in',
   output: 'webdict',
-  configuration: {'PYTHON': python.full_path()},
+  configuration: {
+    'PYTHON': python.full_path(),
+    'LOCALEDIR': get_option('prefix') / get_option('localedir'),
+  },
   install: true,
   install_dir: get_option('bindir'),
   install_mode: 'rwxr-xr-x',

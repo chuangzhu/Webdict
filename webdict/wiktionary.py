@@ -10,6 +10,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, quote
 from urllib.request import Request, urlopen
 
+from .i18n import _
+
 
 USER_AGENT = "Webdict/0.1 (GTK Wiktionary reader; https://github.com/chuangzhu/Webdict)"
 
@@ -197,9 +199,9 @@ def _get_json(host: str, params: dict[str, str], timeout: int = 15):
         with urlopen(request, timeout=timeout) as response:
             return json.load(response)
     except HTTPError as exc:
-        raise WiktionaryError(f"Wiktionary returned HTTP {exc.code}.") from exc
+        raise WiktionaryError(_("Wiktionary returned HTTP {code}.").format(code=exc.code)) from exc
     except (URLError, TimeoutError, json.JSONDecodeError) as exc:
-        raise WiktionaryError("Could not connect to Wiktionary.") from exc
+        raise WiktionaryError(_("Could not connect to Wiktionary.")) from exc
 
 
 def lookup(word: str, edition: str) -> Entry:
@@ -217,8 +219,8 @@ def lookup(word: str, edition: str) -> Entry:
     if "error" in data:
         code = data["error"].get("code", "")
         if code == "missingtitle":
-            raise WiktionaryError(f"No entry found for “{word}”.")
-        raise WiktionaryError(data["error"].get("info", "Wiktionary returned an error."))
+            raise WiktionaryError(_("No entry found for “{word}”.").format(word=word))
+        raise WiktionaryError(data["error"].get("info", _("Wiktionary returned an error.")))
 
     parsed = data["parse"]
     reader = _ReadableHTML()

@@ -14,6 +14,7 @@ gi.require_version("Gst", "1.0")
 from gi.repository import Adw, Gdk, Gio, GLib, Gst, Gtk, Pango
 
 from . import __version__, quirks
+from .i18n import _
 from .wiktionary import Entry, WiktionaryError, lookup, search_suggestions
 
 
@@ -53,7 +54,9 @@ class WebdictApplication(Adw.Application):
             return
 
         self._load_resources()
-        builder = Gtk.Builder.new_from_resource("/cz/chuang/Webdict/window.ui")
+        builder = Gtk.Builder()
+        builder.set_translation_domain("webdict")
+        builder.add_from_resource("/cz/chuang/Webdict/window.ui")
         self.window = builder.get_object("window")
         self.window.set_application(self)
         self.search = builder.get_object("search_entry")
@@ -212,7 +215,7 @@ class WebdictApplication(Adw.Application):
             anchor = self.result_buffer.create_child_anchor(self.result_buffer.get_end_iter())
             button = Gtk.Button(
                 icon_name="pan-down-symbolic",
-                tooltip_text="Collapse section",
+                tooltip_text=_("Collapse section"),
                 valign=Gtk.Align.CENTER,
             )
             button.add_css_class("flat")
@@ -249,11 +252,11 @@ class WebdictApplication(Adw.Application):
                 quotation_index = len(self.definition_quotations)
                 anchor = self.result_buffer.create_child_anchor(self.result_buffer.get_end_iter())
                 icon = Gtk.Image.new_from_icon_name("pan-start-symbolic")
-                label = Gtk.Label(label="quotations")
+                label = Gtk.Label(label=_("quotations"))
                 button_content = Gtk.Box(spacing=4)
                 button_content.append(label)
                 button_content.append(icon)
-                button = Gtk.Button(child=button_content, tooltip_text="Expand quotations", valign=Gtk.Align.CENTER)
+                button = Gtk.Button(child=button_content, tooltip_text=_("Expand quotations"), valign=Gtk.Align.CENTER)
                 button.add_css_class("flat")
                 button.add_css_class("quotation-disclosure")
                 button.connect(
@@ -275,7 +278,7 @@ class WebdictApplication(Adw.Application):
                 anchor = self.result_buffer.create_child_anchor(self.result_buffer.get_end_iter())
                 button = Gtk.Button(
                     icon_name="audio-volume-high-symbolic",
-                    tooltip_text="Play pronunciation",
+                    tooltip_text=_("Play pronunciation"),
                     valign=Gtk.Align.CENTER,
                 )
                 button.add_css_class("flat")
@@ -317,7 +320,7 @@ class WebdictApplication(Adw.Application):
         self.collapsed_quotations = set(range(len(self.definition_quotations)))
         self._apply_collapsed_sections()
         for quotation in self.definition_quotations:
-            quotation["button"].set_tooltip_text("Expand quotations")
+            quotation["button"].set_tooltip_text(_("Expand quotations"))
 
     def on_audio_clicked(self, button) -> None:
         if button.player is None:
@@ -325,7 +328,7 @@ class WebdictApplication(Adw.Application):
             logging.info("Playing %s", button.audio_url)
             if button.player is None:
                 button.set_sensitive(False)
-                button.set_tooltip_text("Audio playback is unavailable")
+                button.set_tooltip_text(_("Audio playback is unavailable"))
                 return
             button.bus = button.player.get_bus()
             button.bus.add_signal_watch()
@@ -340,7 +343,7 @@ class WebdictApplication(Adw.Application):
         self.active_audio_button = button
         result = button.player.set_state(Gst.State.PLAYING)
         if result == Gst.StateChangeReturn.FAILURE:
-            self._stop_active_audio("Audio playback failed")
+            self._stop_active_audio(_("Audio playback failed"))
             return
         self._set_audio_button_playing(button, True)
 
@@ -360,7 +363,7 @@ class WebdictApplication(Adw.Application):
                 self.active_audio_button = None
         elif message.type == Gst.MessageType.ERROR:
             button.player.set_state(Gst.State.NULL)
-            self._set_audio_button_playing(button, False, "Audio playback failed")
+            self._set_audio_button_playing(button, False, _("Audio playback failed"))
             if self.active_audio is button.player:
                 self.active_audio = None
                 self.active_audio_button = None
@@ -370,7 +373,7 @@ class WebdictApplication(Adw.Application):
         button.set_icon_name(
             "media-playback-pause-symbolic" if playing else "audio-volume-high-symbolic"
         )
-        button.set_tooltip_text(error or ("Pause pronunciation" if playing else "Play pronunciation"))
+        button.set_tooltip_text(error or (_("Pause pronunciation") if playing else _("Play pronunciation")))
 
     def _stop_active_audio(self, error: str | None = None) -> None:
         if self.active_audio is not None:
@@ -412,7 +415,7 @@ class WebdictApplication(Adw.Application):
             "pan-start-symbolic" if collapsed else "pan-down-symbolic"
         )
         quotation["button"].set_tooltip_text(
-            "Expand quotations" if collapsed else "Collapse quotations"
+            _("Expand quotations") if collapsed else _("Collapse quotations")
         )
         return GLib.SOURCE_REMOVE
 
@@ -423,7 +426,7 @@ class WebdictApplication(Adw.Application):
             "pan-start-symbolic" if collapsed else "pan-down-symbolic"
         )
         section["button"].set_tooltip_text(
-            "Expand section" if collapsed else "Collapse section"
+            _("Expand section") if collapsed else _("Collapse section")
         )
 
     def _load_resources(self) -> None:
@@ -435,7 +438,7 @@ class WebdictApplication(Adw.Application):
         candidates.append(Path(sys.prefix) / "share" / "webdict" / "webdict-resources.gresource")
         path = next((p for p in candidates if p.exists()), None)
         if path is None:
-            raise RuntimeError("Webdict resources were not found; run `meson compile -C build` first.")
+            raise RuntimeError(_("Webdict resources were not found; run `meson compile -C build` first."))
         self._resource = Gio.Resource.load(str(path))
         Gio.resources_register(self._resource)
         css = Gtk.CssProvider()
@@ -472,7 +475,7 @@ class WebdictApplication(Adw.Application):
         try:
             entry: Entry = future.result()
         except (WiktionaryError, Exception) as exc:
-            message = str(exc) if isinstance(exc, WiktionaryError) else "Something unexpected went wrong."
+            message = str(exc) if isinstance(exc, WiktionaryError) else _("Something unexpected went wrong.")
             self.error_label.set_label(message)
             self.stack.set_visible_child_name("error")
         else:
@@ -490,15 +493,15 @@ class WebdictApplication(Adw.Application):
         dialog = Adw.AboutDialog(
             application_name="Webdict",
             application_icon="cz.chuang.Webdict",
-            developer_name="Webdict contributors",
+            developer_name=_("Webdict contributors"),
             version=__version__,
-            comments="A focused dictionary for every Wiktionary edition.",
+            comments=_("A focused dictionary for every Wiktionary edition."),
             website="https://github.com/chuangzhu/Webdict",
             license_type=Gtk.License.GPL_3_0,
         )
         dialog.add_acknowledgement_section(
-            "Dictionary Data and Infrastructure",
-            ["Wiktionary contributors", "Wikimedia Foundation"],
+            _("Dictionary Data and Infrastructure"),
+            [_("Wiktionary contributors"), _("Wikimedia Foundation")],
         )
         dialog.present(self.props.active_window)
 

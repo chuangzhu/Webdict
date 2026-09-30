@@ -3,10 +3,44 @@
   <id>cz.chuang.Webdict</id>
   <name>Webdict</name>
   <summary>Explore words across Wiktionary</summary>
+  <summary xml:lang="ar">استكشف الكلمات عبر ويكاموس</summary>
+  <summary xml:lang="de">Wörter in Wiktionary entdecken</summary>
+  <summary xml:lang="el">Εξερευνήστε λέξεις στο Βικιλεξικό</summary>
+  <summary xml:lang="es">Explora palabras en Wikcionario</summary>
+  <summary xml:lang="fr">Explorez les mots du Wiktionnaire</summary>
+  <summary xml:lang="hi">विक्षनरी में शब्द खोजें</summary>
+  <summary xml:lang="id">Jelajahi kata di Wiktionary</summary>
+  <summary xml:lang="it">Esplora le parole su Wikizionario</summary>
+  <summary xml:lang="ja">ウィクショナリーの単語を探索</summary>
+  <summary xml:lang="ko">위키낱말사전의 단어 탐색</summary>
+  <summary xml:lang="nl">Ontdek woorden in WikiWoordenboek</summary>
+  <summary xml:lang="pl">Odkrywaj słowa w Wikisłowniku</summary>
+  <summary xml:lang="pt">Explore palavras no Wikcionário</summary>
+  <summary xml:lang="ru">Исследуйте слова в Викисловаре</summary>
+  <summary xml:lang="uk">Досліджуйте слова у Вікісловнику</summary>
+  <summary xml:lang="vi">Khám phá từ ngữ trên Wiktionary</summary>
+  <summary xml:lang="zh">探索维基词典中的词语</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <description>
     <p>Webdict is a clean, focused desktop dictionary powered by multilingual Wiktionary editions.</p>
+    <p xml:lang="ar">Webdict قاموس مكتبي بسيط تدعمه نسخ ويكاموس متعددة اللغات.</p>
+    <p xml:lang="de">Webdict ist ein übersichtliches Desktop-Wörterbuch auf Grundlage mehrsprachiger Wiktionary-Ausgaben.</p>
+    <p xml:lang="el">Το Webdict είναι ένα λιτό λεξικό επιφάνειας εργασίας που βασίζεται στις πολύγλωσσες εκδόσεις του Βικιλεξικού.</p>
+    <p xml:lang="es">Webdict es un diccionario de escritorio sencillo basado en las ediciones multilingües de Wikcionario.</p>
+    <p xml:lang="fr">Webdict est un dictionnaire de bureau épuré alimenté par les éditions multilingues du Wiktionnaire.</p>
+    <p xml:lang="hi">Webdict बहुभाषी विक्षनरी संस्करणों पर आधारित एक सरल डेस्कटॉप शब्दकोश है।</p>
+    <p xml:lang="id">Webdict adalah kamus desktop ringkas yang didukung edisi Wiktionary multibahasa.</p>
+    <p xml:lang="it">Webdict è un dizionario desktop essenziale basato sulle edizioni multilingue di Wikizionario.</p>
+    <p xml:lang="ja">Webdict は多言語版ウィクショナリーを利用するシンプルなデスクトップ辞書です。</p>
+    <p xml:lang="ko">Webdict는 여러 언어판 위키낱말사전을 활용하는 간결한 데스크톱 사전입니다.</p>
+    <p xml:lang="nl">Webdict is een overzichtelijk bureaubladwoordenboek dat meertalige WikiWoordenboek-edities gebruikt.</p>
+    <p xml:lang="pl">Webdict to przejrzysty słownik komputerowy korzystający z wielu wersji językowych Wikisłownika.</p>
+    <p xml:lang="pt">O Webdict é um dicionário simples para o ambiente de trabalho, baseado nas edições multilíngues do Wikcionário.</p>
+    <p xml:lang="ru">Webdict — удобный настольный словарь на основе многоязычных разделов Викисловаря.</p>
+    <p xml:lang="uk">Webdict — зручний словник для стільниці на основі багатомовних розділів Вікісловника.</p>
+    <p xml:lang="vi">Webdict là từ điển máy tính gọn gàng sử dụng các phiên bản Wiktionary đa ngôn ngữ.</p>
+    <p xml:lang="zh">Webdict 是一款由多语言维基词典提供内容的简洁桌面词典。</p>
   </description>
   <launchable type="desktop-id">cz.chuang.Webdict.desktop</launchable>
   <provides><binary>webdict</binary></provides>

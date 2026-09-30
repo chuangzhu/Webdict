@@ -1,5 +1,8 @@
 #!@PYTHON@
+import os
+
+os.environ.setdefault("WEBDICT_LOCALEDIR", "@LOCALEDIR@")
+
 from webdict.application import main
 
 raise SystemExit(main())
-
