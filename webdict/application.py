@@ -29,7 +29,7 @@ EDITIONS = [
 
 class WebdictApplication(Adw.Application):
     def __init__(self) -> None:
-        super().__init__(application_id="io.github.webdict.Webdict", flags=Gio.ApplicationFlags.DEFAULT_FLAGS)
+        super().__init__(application_id="cz.chuang.Webdict", flags=Gio.ApplicationFlags.DEFAULT_FLAGS)
         self.executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="webdict")
         self.connect("activate", self.on_activate)
         self.connect("shutdown", self.on_shutdown)
@@ -53,7 +53,7 @@ class WebdictApplication(Adw.Application):
             return
 
         self._load_resources()
-        builder = Gtk.Builder.new_from_resource("/io/github/webdict/Webdict/window.ui")
+        builder = Gtk.Builder.new_from_resource("/cz/chuang/Webdict/window.ui")
         self.window = builder.get_object("window")
         self.window.set_application(self)
         self.search = builder.get_object("search_entry")
@@ -439,7 +439,7 @@ class WebdictApplication(Adw.Application):
         self._resource = Gio.Resource.load(str(path))
         Gio.resources_register(self._resource)
         css = Gtk.CssProvider()
-        css.load_from_resource("/io/github/webdict/Webdict/style.css")
+        css.load_from_resource("/cz/chuang/Webdict/style.css")
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(),
             css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
@@ -487,15 +487,20 @@ class WebdictApplication(Adw.Application):
             Gtk.UriLauncher.new(self.current_url).launch(self.window, None, None)
 
     def on_about(self, *_args) -> None:
-        Adw.AboutDialog(
+        dialog = Adw.AboutDialog(
             application_name="Webdict",
-            application_icon="io.github.webdict.Webdict",
+            application_icon="cz.chuang.Webdict",
             developer_name="Webdict contributors",
             version=__version__,
             comments="A focused dictionary for every Wiktionary edition.",
-            website="https://www.wiktionary.org/",
+            website="https://github.com/chuangzhu/Webdict",
             license_type=Gtk.License.GPL_3_0,
-        ).present(self.props.active_window)
+        )
+        dialog.add_acknowledgement_section(
+            "Dictionary Data and Infrastructure",
+            ["Wiktionary contributors", "Wikimedia Foundation"],
+        )
+        dialog.present(self.props.active_window)
 
 
 def main() -> int:

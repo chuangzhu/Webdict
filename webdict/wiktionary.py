@@ -11,7 +11,7 @@ from urllib.parse import urlencode, quote
 from urllib.request import Request, urlopen
 
 
-USER_AGENT = "Webdict/0.1 (GTK Wiktionary reader; https://github.com/webdict/webdict)"
+USER_AGENT = "Webdict/0.1 (GTK Wiktionary reader; https://github.com/chuangzhu/Webdict)"
 
 
 class WiktionaryError(Exception):

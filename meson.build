@@ -28,9 +28,9 @@ python.install_sources(
   subdir: 'webdict',
 )
 
-install_data('data/io.github.webdict.Webdict.desktop', install_dir: get_option('datadir') / 'applications')
-install_data('data/io.github.webdict.Webdict.metainfo.xml', install_dir: get_option('datadir') / 'metainfo')
-install_data('data/icons/io.github.webdict.Webdict.svg', install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps')
+install_data('data/cz.chuang.Webdict.desktop', install_dir: get_option('datadir') / 'applications')
+install_data('data/cz.chuang.Webdict.metainfo.xml', install_dir: get_option('datadir') / 'metainfo')
+install_data('data/icons/cz.chuang.Webdict.svg', install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps')
 
 configure_file(
   input: 'webdict.in',

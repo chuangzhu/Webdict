@@ -2,10 +2,9 @@
 Name=Webdict
 Comment=Look up words on Wiktionary
 Exec=webdict
-Icon=io.github.webdict.Webdict
+Icon=cz.chuang.Webdict
 Terminal=false
 Type=Application
 Categories=Education;Dictionary;
 Keywords=Dictionary;Wiktionary;Words;Language;
 StartupNotify=true
-

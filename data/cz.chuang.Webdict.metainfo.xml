@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.webdict.Webdict</id>
+  <id>cz.chuang.Webdict</id>
   <name>Webdict</name>
   <summary>Explore words across Wiktionary</summary>
   <metadata_license>CC0-1.0</metadata_license>
@@ -8,8 +8,7 @@
   <description>
     <p>Webdict is a clean, focused desktop dictionary powered by multilingual Wiktionary editions.</p>
   </description>
-  <launchable type="desktop-id">io.github.webdict.Webdict.desktop</launchable>
+  <launchable type="desktop-id">cz.chuang.Webdict.desktop</launchable>
   <provides><binary>webdict</binary></provides>
   <releases><release version="0.1.0" date="2026-09-28"/></releases>
 </component>
-

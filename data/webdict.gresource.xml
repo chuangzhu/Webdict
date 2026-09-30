@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/io/github/webdict/Webdict">
+  <gresource prefix="/cz/chuang/Webdict">
     <file preprocess="xml-stripblanks">window.ui</file>
     <file>style.css</file>
   </gresource>
 </gresources>
-

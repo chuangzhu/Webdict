@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg height="128px" viewBox="0 0 128 128" width="128px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Webdict</title>
     <linearGradient id="a" gradientUnits="userSpaceOnUse" x1="13.172791" x2="26.374294" y1="-5.142273" y2="-5.142273">
         <stop offset="0" stop-color="#754326"/>
         <stop offset="0.42" stop-color="#66391f"/>
