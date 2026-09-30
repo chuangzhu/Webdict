@@ -15,6 +15,18 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gst, Gtk, Pango
 
 Gst.init(None)
 
+
+def _prefer_curl_http_source() -> None:
+    curl_source = Gst.ElementFactory.find("curlhttpsrc")
+    soup_source = Gst.ElementFactory.find("souphttpsrc")
+    if curl_source is not None:
+        curl_source.set_rank(int(Gst.Rank.PRIMARY) + 1)
+    if soup_source is not None:
+        soup_source.set_rank(Gst.Rank.MARGINAL)
+
+
+_prefer_curl_http_source()
+
 from . import __version__
 from .wiktionary import Entry, WiktionaryError, lookup, search_suggestions
 
@@ -350,33 +362,10 @@ class WebdictApplication(Adw.Application):
         self._set_audio_button_playing(button, True)
 
     def _create_audio_pipeline(self, url: str):
-        pipeline = Gst.Pipeline.new(None)
-        source = Gst.ElementFactory.make("curlhttpsrc", None)
-        decoder = Gst.ElementFactory.make("decodebin", None)
-        converter = Gst.ElementFactory.make("audioconvert", None)
-        resampler = Gst.ElementFactory.make("audioresample", None)
-        sink = Gst.ElementFactory.make("autoaudiosink", None)
-        elements = (source, decoder, converter, resampler, sink)
-        if pipeline is None or any(element is None for element in elements):
-            return None
-        source.set_property("location", url)
-        source.set_property("user-agent", "Webdict/0.1")
-        for element in elements:
-            pipeline.add(element)
-        if not source.link(decoder) or not converter.link(resampler) or not resampler.link(sink):
-            pipeline.set_state(Gst.State.NULL)
-            return None
-        decoder.connect("pad-added", self.on_audio_pad_added, converter)
-        return pipeline
-
-    def on_audio_pad_added(self, _decoder, source_pad, converter) -> None:
-        sink_pad = converter.get_static_pad("sink")
-        if sink_pad is None or sink_pad.is_linked():
-            return
-        caps = source_pad.get_current_caps() or source_pad.query_caps(None)
-        structure = caps.get_structure(0) if caps and caps.get_size() else None
-        if structure and structure.get_name().startswith("audio/"):
-            source_pad.link(sink_pad)
+        player = Gst.ElementFactory.make("playbin", None)
+        if player is not None:
+            player.set_property("uri", url)
+        return player
 
     def on_audio_message(self, _bus, message, button) -> None:
         if message.type == Gst.MessageType.EOS:
