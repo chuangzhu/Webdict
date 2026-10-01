@@ -1,3 +1,5 @@
+<img width="60" alt="logo" src="https://github.com/user-attachments/assets/8b52940f-6c53-4185-a569-e1d5157ca36d">
+
 # Webdict
 
 A focused GTK 4/libadwaita dictionary client for multilingual Wiktionary editions.
