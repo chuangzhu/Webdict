@@ -4,14 +4,18 @@ gnome = import('gnome')
 i18n = import('i18n')
 python = import('python').find_installation('python3')
 
+subdir('po')
+subdir('data')
+
 test(
   'unit',
   python,
   args: ['-m', 'unittest', 'discover', '-s', 'tests', '-v'],
   workdir: meson.current_source_dir(),
+  depends: schemas,
+  env: {'GSETTINGS_SCHEMA_DIR': meson.current_build_dir() / 'data'},
 )
-
-subdir('po')
+gnome.post_install(glib_compile_schemas: true)
 
 blueprints = custom_target(
   'blueprints',

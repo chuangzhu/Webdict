@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="cz.chuang.Webdict" path="/cz/chuang/Webdict/">
+    <key name="wiktionary-edition" type="s">
+      <default>'en'</default>
+      <summary>Wiktionary edition</summary>
+      <description>Language code of the selected Wiktionary edition.</description>
+    </key>
+  </schema>
+</schemalist>
