@@ -14,7 +14,6 @@ class SearchSuggestionsTests(unittest.TestCase):
         self.app = Mock()
         self.app.search.get_text.return_value = "cat"
         self.app.edition.get_selected_edition.return_value = ("English", "en")
-        self.app.active_audio = None
         self.app.suggestion_timeout = None
         self.app.suggestion_generation = 0
         self.app.suggestion_list.get_row_at_index.return_value = None

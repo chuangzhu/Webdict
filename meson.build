@@ -38,6 +38,7 @@ python.install_sources(
   'webdict/__init__.py',
   'webdict/application.py',
   'webdict/edition_dropdown.py',
+  'webdict/result_text.py',
   'webdict/wiktionary.py',
   'webdict/quirks.py',
   'webdict/i18n.py',

@@ -1,4 +1,4 @@
 data/ui/window.blp
 webdict/application.py
+webdict/result_text.py
 webdict/wiktionary.py
-

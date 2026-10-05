@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: webdict\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 21:53+0800\n"
+"POT-Creation-Date: 2026-10-05 21:59+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,65 +85,65 @@ msgstr ""
 msgid "Open on Wiktionary"
 msgstr ""
 
-#: webdict/application.py:206 webdict/application.py:417
-msgid "Collapse section"
-msgstr ""
-
-#: webdict/application.py:243
-msgid "quotations"
-msgstr ""
-
-#: webdict/application.py:247 webdict/application.py:311
-#: webdict/application.py:406
-msgid "Expand quotations"
-msgstr ""
-
-#: webdict/application.py:269 webdict/application.py:364
-msgid "Play pronunciation"
-msgstr ""
-
-#: webdict/application.py:319
-msgid "Audio playback is unavailable"
-msgstr ""
-
-#: webdict/application.py:334 webdict/application.py:354
-msgid "Audio playback failed"
-msgstr ""
-
-#: webdict/application.py:364
-msgid "Pause pronunciation"
-msgstr ""
-
-#: webdict/application.py:406
-msgid "Collapse quotations"
-msgstr ""
-
-#: webdict/application.py:417
-msgid "Expand section"
-msgstr ""
-
-#: webdict/application.py:453
+#: webdict/application.py:162
 msgid "Something unexpected went wrong."
 msgstr ""
 
-#: webdict/application.py:471
+#: webdict/application.py:180
 msgid "Webdict contributors"
 msgstr ""
 
-#: webdict/application.py:473
+#: webdict/application.py:182
 msgid "A focused dictionary for every Wiktionary edition."
 msgstr ""
 
-#: webdict/application.py:478
+#: webdict/application.py:187
 msgid "Dictionary Data and Infrastructure"
 msgstr ""
 
-#: webdict/application.py:479
+#: webdict/application.py:188
 msgid "Wiktionary contributors"
 msgstr ""
 
-#: webdict/application.py:479
+#: webdict/application.py:188
 msgid "Wikimedia Foundation"
+msgstr ""
+
+#: webdict/result_text.py:110 webdict/result_text.py:316
+msgid "Collapse section"
+msgstr ""
+
+#: webdict/result_text.py:147
+msgid "quotations"
+msgstr ""
+
+#: webdict/result_text.py:151 webdict/result_text.py:215
+#: webdict/result_text.py:305
+msgid "Expand quotations"
+msgstr ""
+
+#: webdict/result_text.py:173 webdict/result_text.py:268
+msgid "Play pronunciation"
+msgstr ""
+
+#: webdict/result_text.py:223
+msgid "Audio playback is unavailable"
+msgstr ""
+
+#: webdict/result_text.py:238 webdict/result_text.py:258
+msgid "Audio playback failed"
+msgstr ""
+
+#: webdict/result_text.py:268
+msgid "Pause pronunciation"
+msgstr ""
+
+#: webdict/result_text.py:305
+msgid "Collapse quotations"
+msgstr ""
+
+#: webdict/result_text.py:316
+msgid "Expand section"
 msgstr ""
 
 #: webdict/wiktionary.py:202
