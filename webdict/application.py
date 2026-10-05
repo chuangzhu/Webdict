@@ -90,6 +90,14 @@ class WebdictApplication(Adw.Application):
 
         model = Gtk.StringList.new([name for name, _code in EDITIONS])
         self.edition.set_model(model)
+        code_factory = Gtk.SignalListItemFactory()
+        code_factory.connect("setup", self.setup_edition_item)
+        code_factory.connect("bind", self.bind_edition_code)
+        self.edition.set_factory(code_factory)
+        name_factory = Gtk.SignalListItemFactory()
+        name_factory.connect("setup", self.setup_edition_item)
+        name_factory.connect("bind", self.bind_edition_name)
+        self.edition.set_list_factory(name_factory)
         self.search.connect("activate", self.on_search)
         self.search.connect("search-changed", self.on_search_changed)
         self.edition.connect("notify::selected", self.on_search_changed)
@@ -97,6 +105,15 @@ class WebdictApplication(Adw.Application):
         self.suggestion_list.connect("row-activated", self.on_suggestion_activated)
         self.window.present()
         self.search.grab_focus()
+
+    def setup_edition_item(self, _factory, item) -> None:
+        item.set_child(Gtk.Label(xalign=0))
+
+    def bind_edition_code(self, _factory, item) -> None:
+        item.get_child().set_text(EDITIONS[item.get_position()][1])
+
+    def bind_edition_name(self, _factory, item) -> None:
+        item.get_child().set_text(item.get_item().get_string())
 
     def on_search_changed(self, *_args) -> None:
         if self.suggestion_timeout is not None:
