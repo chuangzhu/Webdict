@@ -4,6 +4,13 @@ gnome = import('gnome')
 i18n = import('i18n')
 python = import('python').find_installation('python3')
 
+test(
+  'unit',
+  python,
+  args: ['-m', 'unittest', 'discover', '-s', 'tests', '-v'],
+  workdir: meson.current_source_dir(),
+)
+
 subdir('po')
 
 blueprints = custom_target(

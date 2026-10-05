@@ -446,10 +446,6 @@ class WebdictApplication(Adw.Application):
         self.title.set_title(word)
         if self.active_audio is not None:
             self._stop_active_audio()
-        self.suggestion_generation += 1
-        if self.suggestion_timeout is not None:
-            GLib.source_remove(self.suggestion_timeout)
-            self.suggestion_timeout = None
         edition_name, code = self.edition.get_selected_edition()
         self.stack.set_visible_child_name("loading")
         self.open_wiktionary_action.set_enabled(False)
