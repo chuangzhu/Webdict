@@ -495,7 +495,7 @@ def main() -> int:
     logging.basicConfig(level=logging.INFO)
     Gst.init(None)
     quirks.gst_prefer_curl_http_source()
-    quirks.urllib_honor_gnome_proxy_settings()
+    quirks.export_system_proxy_settings()
     return WebdictApplication().run(sys.argv)
 
 

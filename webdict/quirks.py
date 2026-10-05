@@ -1,4 +1,4 @@
-from urllib.request import ProxyHandler, build_opener, install_opener
+import urllib.request
 import logging
 import locale
 import os
@@ -18,12 +18,20 @@ def gst_prefer_curl_http_source() -> None:
         soup_source.set_rank(Gst.Rank.MARGINAL)
 
 
-def urllib_honor_gnome_proxy_settings() -> None:
+def export_system_proxy_settings() -> None:
+    # macOS / Windows
+    proxy = urllib.request.getproxies().get("https")
+    if proxy:
+        os.environ.setdefault("HTTPS_PROXY", proxy)
+        logging.info("Exported proxy to Gst: %s", proxy)
+        return
+
+    # GNOME
     proxies = Gio.ProxyResolver.get_default().lookup("https://www.wiktionary.org/", None)
     proxy = proxies[0] if proxies else "direct://"
     if proxy != "direct://":
-        logging.info("Applied Gio proxy settings: %s", proxy)
-        install_opener(build_opener(ProxyHandler({"https": proxy})))
+        os.environ.setdefault("HTTPS_PROXY", proxy)
+        logging.info("Applied Gio proxy settings to Gst and urllib: %s", proxy)
 
 
 def patch_nongnu_locale_module() -> None:
