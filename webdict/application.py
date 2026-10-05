@@ -14,18 +14,9 @@ gi.require_version("Gst", "1.0")
 from gi.repository import Adw, Gdk, Gio, GLib, Gst, Gtk, Pango
 
 from . import __version__, quirks
+from .edition_dropdown import EditionDropdown  # Register the widget for Gtk.Builder.
 from .i18n import _
 from .wiktionary import Entry, WiktionaryError, lookup, search_suggestions
-
-
-EDITIONS = [
-    ("English", "en"), ("中文", "zh"), ("Español", "es"),
-    ("Français", "fr"), ("Deutsch", "de"), ("Italiano", "it"),
-    ("日本語", "ja"), ("한국어", "ko"), ("Português", "pt"),
-    ("Русский", "ru"), ("العربية", "ar"), ("Nederlands", "nl"),
-    ("Polski", "pl"), ("Українська", "uk"), ("Tiếng Việt", "vi"),
-    ("Ελληνικά", "el"), ("हिन्दी", "hi"), ("Bahasa Indonesia", "id"),
-]
 
 
 class WebdictApplication(Adw.Application):
@@ -61,7 +52,7 @@ class WebdictApplication(Adw.Application):
         self.window.set_application(self)
         self.search = builder.get_object("search_entry")
         self.split_view = builder.get_object("split_view")
-        self.edition = builder.get_object("edition_dropdown")
+        self.edition: EditionDropdown = builder.get_object("edition_dropdown")
         self.stack = builder.get_object("content_stack")
         self.title = builder.get_object("title")
         self.result = builder.get_object("result_text")
@@ -88,16 +79,6 @@ class WebdictApplication(Adw.Application):
         self.suggestion_timeout = None
         self.suggestion_generation = 0
 
-        model = Gtk.StringList.new([name for name, _code in EDITIONS])
-        self.edition.set_model(model)
-        code_factory = Gtk.SignalListItemFactory()
-        code_factory.connect("setup", self.setup_edition_item)
-        code_factory.connect("bind", self.bind_edition_code)
-        self.edition.set_factory(code_factory)
-        name_factory = Gtk.SignalListItemFactory()
-        name_factory.connect("setup", self.setup_edition_item)
-        name_factory.connect("bind", self.bind_edition_name)
-        self.edition.set_list_factory(name_factory)
         self.search.connect("activate", self.on_search)
         self.search.connect("search-changed", self.on_search_changed)
         self.edition.connect("notify::selected", self.on_search_changed)
@@ -105,15 +86,6 @@ class WebdictApplication(Adw.Application):
         self.suggestion_list.connect("row-activated", self.on_suggestion_activated)
         self.window.present()
         self.search.grab_focus()
-
-    def setup_edition_item(self, _factory, item) -> None:
-        item.set_child(Gtk.Label(xalign=0))
-
-    def bind_edition_code(self, _factory, item) -> None:
-        item.get_child().set_text(EDITIONS[item.get_position()][1])
-
-    def bind_edition_name(self, _factory, item) -> None:
-        item.get_child().set_text(item.get_item().get_string())
 
     def on_search_changed(self, *_args) -> None:
         if self.suggestion_timeout is not None:
@@ -127,7 +99,7 @@ class WebdictApplication(Adw.Application):
         self.suggestion_timeout = None
         query = self.search.get_text().strip()
         self.suggestion_stack.set_visible_child_name("loading")
-        _name, code = EDITIONS[self.edition.get_selected()]
+        _name, code = self.edition.get_selected_edition()
         future = self.executor.submit(search_suggestions, query, code)
         future.add_done_callback(
             lambda f: GLib.idle_add(self.finish_suggestions, f, generation, query)
@@ -478,7 +450,7 @@ class WebdictApplication(Adw.Application):
         if self.suggestion_timeout is not None:
             GLib.source_remove(self.suggestion_timeout)
             self.suggestion_timeout = None
-        edition_name, code = EDITIONS[self.edition.get_selected()]
+        edition_name, code = self.edition.get_selected_edition()
         self.stack.set_visible_child_name("loading")
         self.open_wiktionary_action.set_enabled(False)
         self.current_url = None
