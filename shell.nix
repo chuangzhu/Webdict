@@ -25,6 +25,7 @@ pkgs.mkShell {
     gettext
     desktop-file-utils
 
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     flatpak
     flatpak-builder
     appstream
