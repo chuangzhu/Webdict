@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: webdict\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 21:59+0800\n"
+"POT-Creation-Date: 2026-10-05 22:31+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,108 +41,108 @@ msgstr ""
 msgid "Definitions are sourced from the selected Wiktionary edition."
 msgstr ""
 
-#: data/ui/window.blp:97 data/ui/window.blp:101
+#: data/ui/window.blp:97 webdict/definition_page.py:23
 msgid "Definition"
 msgstr ""
 
-#: data/ui/window.blp:105
-msgid "Definition Menu"
-msgstr ""
-
-#: data/ui/window.blp:118
-msgid "A world of words"
-msgstr ""
-
-#: data/ui/window.blp:119
-msgid "Choose an edition and start exploring."
-msgstr ""
-
-#: data/ui/window.blp:130
-msgid "Looking it up…"
-msgstr ""
-
-#: data/ui/window.blp:137
-msgid "No definition here"
-msgstr ""
-
-#: data/ui/window.blp:138
-msgid "Check the spelling or try another edition."
-msgstr ""
-
-#: data/ui/window.blp:145
-msgid "Try Again"
-msgstr ""
-
-#: data/ui/window.blp:176
+#: data/ui/window.blp:106
 msgid "About Webdict"
 msgstr ""
 
-#: data/ui/window.blp:177
+#: data/ui/window.blp:107
 msgid "Quit"
 msgstr ""
 
-#: data/ui/window.blp:181
+#: data/ui/definition-page.blp:10
+msgid "Definition Menu"
+msgstr ""
+
+#: data/ui/definition-page.blp:23
+msgid "A world of words"
+msgstr ""
+
+#: data/ui/definition-page.blp:24
+msgid "Choose an edition and start exploring."
+msgstr ""
+
+#: data/ui/definition-page.blp:35
+msgid "Looking it up…"
+msgstr ""
+
+#: data/ui/definition-page.blp:42
+msgid "No definition here"
+msgstr ""
+
+#: data/ui/definition-page.blp:43
+msgid "Check the spelling or try another edition."
+msgstr ""
+
+#: data/ui/definition-page.blp:50
+msgid "Try Again"
+msgstr ""
+
+#: data/ui/definition-page.blp:78
 msgid "Open on Wiktionary"
 msgstr ""
 
-#: webdict/application.py:162
+#: webdict/application.py:178
 msgid "Something unexpected went wrong."
 msgstr ""
 
-#: webdict/application.py:180
+#: webdict/application.py:194
 msgid "Webdict contributors"
 msgstr ""
 
-#: webdict/application.py:182
+#: webdict/application.py:196
 msgid "A focused dictionary for every Wiktionary edition."
 msgstr ""
 
-#: webdict/application.py:187
+#: webdict/application.py:201
 msgid "Dictionary Data and Infrastructure"
 msgstr ""
 
-#: webdict/application.py:188
+#: webdict/application.py:202
 msgid "Wiktionary contributors"
 msgstr ""
 
-#: webdict/application.py:188
+#: webdict/application.py:202
 msgid "Wikimedia Foundation"
 msgstr ""
 
-#: webdict/result_text.py:110 webdict/result_text.py:316
+#: webdict/result_text.py:105 webdict/result_text.py:321
 msgid "Collapse section"
 msgstr ""
 
-#: webdict/result_text.py:147
+#: webdict/result_text.py:142
 msgid "quotations"
 msgstr ""
 
-#: webdict/result_text.py:151 webdict/result_text.py:215
-#: webdict/result_text.py:305
+#: webdict/result_text.py:146 webdict/result_text.py:210
+#: webdict/result_text.py:310
 msgid "Expand quotations"
 msgstr ""
 
-#: webdict/result_text.py:173 webdict/result_text.py:268
+#: webdict/result_text.py:168 webdict/result_text.py:263
 msgid "Play pronunciation"
 msgstr ""
 
-#: webdict/result_text.py:223
+#: webdict/result_text.py:218
 msgid "Audio playback is unavailable"
 msgstr ""
 
-#: webdict/result_text.py:238 webdict/result_text.py:258
+#: webdict/result_text.py:233 webdict/result_text.py:253
 msgid "Audio playback failed"
 msgstr ""
 
-#: webdict/result_text.py:268
+#: webdict/result_text.py:263
 msgid "Pause pronunciation"
 msgstr ""
 
-#: webdict/result_text.py:305
+#: webdict/result_text.py:310
 msgid "Collapse quotations"
 msgstr ""
 
-#: webdict/result_text.py:316
+#: webdict/result_text.py:321
 msgid "Expand section"
 msgstr ""
 

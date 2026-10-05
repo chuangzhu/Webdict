@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/cz/chuang/Webdict">
     <file preprocess="xml-stripblanks">window.ui</file>
+    <file preprocess="xml-stripblanks">definition-page.ui</file>
     <file>style.css</file>
   </gresource>
 </gresources>

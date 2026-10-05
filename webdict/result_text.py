@@ -80,17 +80,12 @@ class ResultTextView(Gtk.TextView):
             self.text_buffer.create_tag(name, **properties)
 
     def render_entry(self, entry: Entry) -> None:
+        self.release_audio()
         self.text_buffer.set_text("")
         self.definition_sections = []
         self.collapsed_sections = set()
         self.definition_quotations = []
         self.collapsed_quotations = set()
-        if self.active_audio is not None:
-            self.stop_audio()
-        for button in self.audio_buttons:
-            if button.player is not None:
-                button.player.set_state(Gst.State.NULL)
-                button.bus.remove_signal_watch()
         for button in self.section_buttons + self.quotation_buttons + self.audio_buttons:
             if button.get_parent() is self:
                 self.remove(button)
@@ -275,6 +270,16 @@ class ResultTextView(Gtk.TextView):
         self.active_audio = None
         self.active_audio_button = None
 
+    def release_audio(self) -> None:
+        self.stop_audio()
+        for button in self.audio_buttons:
+            if button.player is not None:
+                button.player.set_state(Gst.State.NULL)
+                button.bus.remove_signal_watch()
+                self._set_audio_button_playing(button, False)
+                button.player = None
+                button.bus = None
+
     def _apply_collapsed_sections(self) -> None:
         start = self.text_buffer.get_start_iter()
         end = self.text_buffer.get_end_iter()
@@ -315,4 +320,3 @@ class ResultTextView(Gtk.TextView):
         section["button"].set_tooltip_text(
             _("Expand section") if collapsed else _("Collapse section")
         )
-

@@ -13,9 +13,9 @@ gi.require_version("Gst", "1.0")
 from gi.repository import Adw, Gdk, Gio, GLib, Gst, Gtk, Pango
 
 from . import __version__, quirks
+from .definition_page import DefinitionPage
 from .edition_dropdown import EditionDropdown  # Register the widget for Gtk.Builder.
 from .i18n import _
-from .result_text import ResultTextView  # Register the widget for Gtk.Builder.
 from .wiktionary import Entry, WiktionaryError, lookup, search_suggestions
 
 
@@ -53,22 +53,18 @@ class WebdictApplication(Adw.Application):
         self.search = builder.get_object("search_entry")
         self.split_view = builder.get_object("split_view")
         self.edition: EditionDropdown = builder.get_object("edition_dropdown")
-        self.stack = builder.get_object("content_stack")
-        self.title = builder.get_object("title")
-        self.result: ResultTextView = builder.get_object("result_text")
-        self.result.connect("lookup-word", self.on_definition_word)
-        self.retry_button = builder.get_object("retry_button")
-        self.error_label = builder.get_object("error_label")
+        self.definition_navigation = builder.get_object("definition_navigation")
+        self.definition_page: DefinitionPage = builder.get_object("definition_page")
+        self._connect_definition_page(self.definition_page)
+        self.definition_navigation.connect("notify::visible-page", self._update_open_action)
         self.suggestion_stack = builder.get_object("suggestion_stack")
         self.suggestion_list = builder.get_object("suggestion_list")
-        self.current_url = None
         self.suggestion_timeout = None
         self.suggestion_generation = 0
 
         self.search.connect("activate", self.on_search)
         self.search.connect("search-changed", self.on_search_changed)
         self.edition.connect("notify::selected", self.on_search_changed)
-        self.retry_button.connect("clicked", self.on_search)
         self.suggestion_list.connect("row-activated", self.on_suggestion_activated)
         self.window.present()
         self.search.grab_focus()
@@ -117,14 +113,29 @@ class WebdictApplication(Adw.Application):
         self.search.set_position(-1)
         self.on_search()
 
-    def on_definition_word(self, _view, word: str) -> None:
-        self.search.set_text(word)
-        self.search.set_position(-1)
-        self.on_search()
+    def _connect_definition_page(self, page: DefinitionPage) -> None:
+        page.connect("lookup-word", self.on_definition_word)
+        page.connect("retry", self.on_definition_retry)
+
+    def on_definition_word(self, source_page: DefinitionPage, word: str) -> None:
+        source_page.result.stop_audio()
+        page = DefinitionPage()
+        self._connect_definition_page(page)
+        self.definition_navigation.push(page)
+        self._lookup_definition(page, word, source_page.edition_name, source_page.edition_code)
+
+    def on_definition_retry(self, page: DefinitionPage) -> None:
+        self._lookup_definition(page, page.word, page.edition_name, page.edition_code)
+
+    def _update_open_action(self, *_args) -> None:
+        page = self.definition_navigation.get_visible_page()
+        self.open_wiktionary_action.set_enabled(page is not None and page.current_url is not None)
 
     def on_shutdown(self, *_args) -> None:
-        if getattr(self, "result", None) is not None:
-            self.result.stop_audio()
+        if getattr(self, "definition_navigation", None) is not None:
+            pages = self.definition_navigation.get_navigation_stack()
+            for index in range(pages.get_n_items()):
+                pages.get_item(index).result.release_audio()
         self.executor.shutdown(wait=False, cancel_futures=True)
 
     def _load_resources(self) -> None:
@@ -143,35 +154,38 @@ class WebdictApplication(Adw.Application):
             self.search.add_css_class("error")
             return
         self.search.remove_css_class("error")
-        self.title.set_title(word)
-        self.result.stop_audio()
         edition_name, code = self.edition.get_selected_edition()
-        self.stack.set_visible_child_name("loading")
-        self.open_wiktionary_action.set_enabled(False)
-        self.current_url = None
+        self.definition_navigation.replace([self.definition_page])
         self.split_view.set_show_content(True)
-        self.search.set_sensitive(False)
-        future = self.executor.submit(lookup, word, code)
-        future.add_done_callback(lambda f: GLib.idle_add(self.finish_search, f, edition_name))
+        self._lookup_definition(self.definition_page, word, edition_name, code)
 
-    def finish_search(self, future, edition_name: str) -> bool:
-        self.search.set_sensitive(True)
+    def _lookup_definition(self, page: DefinitionPage, word: str, edition_name: str, code: str) -> None:
+        generation = page.start_lookup(word, edition_name, code)
+        self._update_open_action()
+        if page is self.definition_page:
+            self.search.set_sensitive(False)
+        future = self.executor.submit(lookup, word, code)
+        future.add_done_callback(lambda f: GLib.idle_add(self.finish_search, f, page, generation))
+
+    def finish_search(self, future, page: DefinitionPage, generation: int) -> bool:
+        if generation != page.lookup_generation:
+            return GLib.SOURCE_REMOVE
+        if page is self.definition_page:
+            self.search.set_sensitive(True)
         try:
             entry: Entry = future.result()
         except (WiktionaryError, Exception) as exc:
             message = str(exc) if isinstance(exc, WiktionaryError) else _("Something unexpected went wrong.")
-            self.error_label.set_label(message)
-            self.stack.set_visible_child_name("error")
+            page.show_error(message)
         else:
-            self.result.render_entry(entry)
-            self.current_url = entry.url
-            self.open_wiktionary_action.set_enabled(True)
-            self.stack.set_visible_child_name("result")
+            page.show_entry(entry)
+        self._update_open_action()
         return GLib.SOURCE_REMOVE
 
     def on_open(self, *_args) -> None:
-        if self.current_url:
-            Gtk.UriLauncher.new(self.current_url).launch(self.window, None, None)
+        page = self.definition_navigation.get_visible_page()
+        if page is not None and page.current_url:
+            Gtk.UriLauncher.new(page.current_url).launch(self.window, None, None)
 
     def on_about(self, *_args) -> None:
         dialog = Adw.AboutDialog(

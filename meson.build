@@ -24,11 +24,18 @@ blueprints = custom_target(
   command: [find_program('blueprint-compiler'), 'compile', '@INPUT@', '--output', '@OUTPUT@'],
 )
 
+definition_blueprint = custom_target(
+  'definition-blueprint',
+  input: 'data/ui/definition-page.blp',
+  output: 'definition-page.ui',
+  command: [find_program('blueprint-compiler'), 'compile', '@INPUT@', '--output', '@OUTPUT@'],
+)
+
 resources = gnome.compile_resources(
   'webdict-resources',
   'data/webdict.gresource.xml',
   source_dir: ['data', meson.current_build_dir()],
-  dependencies: blueprints,
+  dependencies: [blueprints, definition_blueprint],
   gresource_bundle: true,
   install: true,
   install_dir: get_option('datadir') / 'webdict',
@@ -38,6 +45,7 @@ python.install_sources(
   'webdict/__init__.py',
   'webdict/application.py',
   'webdict/edition_dropdown.py',
+  'webdict/definition_page.py',
   'webdict/result_text.py',
   'webdict/wiktionary.py',
   'webdict/quirks.py',

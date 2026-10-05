@@ -1,4 +1,6 @@
 data/ui/window.blp
+data/ui/definition-page.blp
 webdict/application.py
+webdict/definition_page.py
 webdict/result_text.py
 webdict/wiktionary.py

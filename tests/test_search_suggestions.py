@@ -14,10 +14,14 @@ class SearchSuggestionsTests(unittest.TestCase):
         self.app = Mock()
         self.app.search.get_text.return_value = "cat"
         self.app.edition.get_selected_edition.return_value = ("English", "en")
+        self.app.definition_page.lookup_generation = 1
+        self.app.definition_page.start_lookup.return_value = 1
+        self.app.definition_page.current_url = None
+        self.app.definition_navigation.get_visible_page.return_value = self.app.definition_page
         self.app.suggestion_timeout = None
         self.app.suggestion_generation = 0
         self.app.suggestion_list.get_row_at_index.return_value = None
-        for name in ("request_suggestions", "finish_suggestions", "finish_search"):
+        for name in ("request_suggestions", "finish_suggestions", "finish_search", "_lookup_definition", "_update_open_action"):
             setattr(self.app, name, partial(getattr(WebdictApplication, name), self.app))
         self.requests = []
 
@@ -46,10 +50,12 @@ class SearchSuggestionsTests(unittest.TestCase):
 
     def press_enter_and_finish_definition(self):
         WebdictApplication.on_search(self.app)
+        self.app.definition_navigation.replace.assert_called_once_with([self.app.definition_page])
         function, _args, future = self.requests[-1]
         self.assertIs(function, lookup)
-        future.set_result(SimpleNamespace(url="https://en.wiktionary.org/wiki/cat"))
-        self.app.stack.set_visible_child_name.assert_called_with("result")
+        entry = SimpleNamespace(url="https://en.wiktionary.org/wiki/cat")
+        future.set_result(entry)
+        self.app.definition_page.show_entry.assert_called_once_with(entry)
 
     def test_enter_during_debounce_preserves_suggestion_request(self):
         self.change_text("cat")
