@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -16,20 +14,6 @@ EDITIONS = [
     ("Polski", "pl"), ("Українська", "uk"), ("Tiếng Việt", "vi"),
     ("Ελληνικά", "el"), ("हिन्दी", "hi"), ("Bahasa Indonesia", "id"),
 ]
-
-
-def load_settings() -> Gio.Settings:
-    source = Gio.SettingsSchemaSource.get_default()
-    schema = source.lookup("cz.chuang.Webdict", True) if source else None
-    if schema is None:
-        # Support running directly from a Meson source checkout.
-        schema_dir = Path(__file__).resolve().parent.parent / "build" / "data"
-        if (schema_dir / "gschemas.compiled").exists():
-            source = Gio.SettingsSchemaSource.new_from_directory(str(schema_dir), source, False)
-            schema = source.lookup("cz.chuang.Webdict", False)
-    if schema is None:
-        raise RuntimeError("Webdict settings schema was not found; run `meson compile -C build` first.")
-    return Gio.Settings.new_full(schema, None, None)
 
 
 class EditionDropdown(Gtk.DropDown):
@@ -49,7 +33,7 @@ class EditionDropdown(Gtk.DropDown):
         name_factory.connect("bind", self._bind_name)
         self.set_list_factory(name_factory)
 
-        self.settings = load_settings()
+        self.settings = Gio.Settings("cz.chuang.Webdict")
         self._restore_edition()
         self.connect("notify::selected", self._save_edition)
 

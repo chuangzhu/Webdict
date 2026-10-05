@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 import unittest
 from unittest.mock import Mock
 
@@ -10,10 +9,7 @@ from webdict.edition_dropdown import EDITIONS, EditionDropdown, Gtk
 
 class EditionSettingsTests(unittest.TestCase):
     def setUp(self):
-        schema_dir = os.environ.get(
-            "GSETTINGS_SCHEMA_DIR",
-            str(Path(__file__).resolve().parent.parent / "build" / "data"),
-        )
+        schema_dir = os.environ["GSETTINGS_SCHEMA_DIR"]
         source = Gio.SettingsSchemaSource.new_from_directory(schema_dir, None, False)
         self.schema = source.lookup("cz.chuang.Webdict", False)
         self.backend = Gio.memory_settings_backend_new()

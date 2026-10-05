@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: webdict\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-30 17:12+0800\n"
+"POT-Creation-Date: 2026-10-05 21:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,68 +85,64 @@ msgstr ""
 msgid "Open on Wiktionary"
 msgstr ""
 
-#: webdict/application.py:218 webdict/application.py:429
+#: webdict/application.py:206 webdict/application.py:417
 msgid "Collapse section"
 msgstr ""
 
-#: webdict/application.py:255
+#: webdict/application.py:243
 msgid "quotations"
 msgstr ""
 
-#: webdict/application.py:259 webdict/application.py:323
-#: webdict/application.py:418
+#: webdict/application.py:247 webdict/application.py:311
+#: webdict/application.py:406
 msgid "Expand quotations"
 msgstr ""
 
-#: webdict/application.py:281 webdict/application.py:376
+#: webdict/application.py:269 webdict/application.py:364
 msgid "Play pronunciation"
 msgstr ""
 
-#: webdict/application.py:331
+#: webdict/application.py:319
 msgid "Audio playback is unavailable"
 msgstr ""
 
-#: webdict/application.py:346 webdict/application.py:366
+#: webdict/application.py:334 webdict/application.py:354
 msgid "Audio playback failed"
 msgstr ""
 
-#: webdict/application.py:376
+#: webdict/application.py:364
 msgid "Pause pronunciation"
 msgstr ""
 
-#: webdict/application.py:418
+#: webdict/application.py:406
 msgid "Collapse quotations"
 msgstr ""
 
-#: webdict/application.py:429
+#: webdict/application.py:417
 msgid "Expand section"
 msgstr ""
 
-#: webdict/application.py:441
-msgid "Webdict resources were not found; run `meson compile -C build` first."
-msgstr ""
-
-#: webdict/application.py:478
+#: webdict/application.py:453
 msgid "Something unexpected went wrong."
 msgstr ""
 
-#: webdict/application.py:496
+#: webdict/application.py:471
 msgid "Webdict contributors"
 msgstr ""
 
-#: webdict/application.py:498
+#: webdict/application.py:473
 msgid "A focused dictionary for every Wiktionary edition."
 msgstr ""
 
-#: webdict/application.py:503
+#: webdict/application.py:478
 msgid "Dictionary Data and Infrastructure"
 msgstr ""
 
-#: webdict/application.py:504
+#: webdict/application.py:479
 msgid "Wiktionary contributors"
 msgstr ""
 
-#: webdict/application.py:504
+#: webdict/application.py:479
 msgid "Wikimedia Foundation"
 msgstr ""
 

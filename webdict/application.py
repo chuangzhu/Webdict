@@ -3,7 +3,6 @@ from __future__ import annotations
 import sys
 import os
 import logging
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
 import gi
@@ -419,16 +418,7 @@ class WebdictApplication(Adw.Application):
         )
 
     def _load_resources(self) -> None:
-        if getattr(self, "_resource", None):
-            return
-        candidates = [Path.cwd() / "build" / "webdict-resources.gresource"]
-        candidates += [Path(p) / "webdict" / "webdict-resources.gresource"
-                       for p in os.environ.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").split(":")]
-        candidates.append(Path(sys.prefix) / "share" / "webdict" / "webdict-resources.gresource")
-        path = next((p for p in candidates if p.exists()), None)
-        if path is None:
-            raise RuntimeError(_("Webdict resources were not found; run `meson compile -C build` first."))
-        self._resource = Gio.Resource.load(str(path))
+        self._resource = Gio.Resource.load(os.environ["WEBDICT_RESOURCEFILE"])
         Gio.resources_register(self._resource)
         css = Gtk.CssProvider()
         css.load_from_resource("/cz/chuang/Webdict/style.css")

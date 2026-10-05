@@ -54,6 +54,7 @@ configure_file(
   configuration: {
     'PYTHON': python.full_path(),
     'LOCALEDIR': get_option('prefix') / get_option('localedir'),
+    'RESOURCEFILE': get_option('prefix') / get_option('datadir') / 'webdict' / 'webdict-resources.gresource',
   },
   install: true,
   install_dir: get_option('bindir'),

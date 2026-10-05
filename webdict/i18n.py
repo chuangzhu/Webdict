@@ -3,7 +3,6 @@
 import gettext
 import locale
 import os
-from pathlib import Path
 
 from . import quirks
 
@@ -16,11 +15,6 @@ try:
 except locale.Error:
     pass
 
-
-if not LOCALE_DIR:
-    development_locale_dir = Path(__file__).resolve().parent.parent / "build" / "po"
-    if development_locale_dir.is_dir():
-        LOCALE_DIR = str(development_locale_dir)
 
 quirks.patch_nongnu_locale_module()
 

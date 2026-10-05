@@ -2,6 +2,7 @@
 import os
 
 os.environ.setdefault("WEBDICT_LOCALEDIR", "@LOCALEDIR@")
+os.environ.setdefault("WEBDICT_RESOURCEFILE", "@RESOURCEFILE@")
 
 from webdict.application import main
 
