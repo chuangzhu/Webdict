@@ -1,16 +1,21 @@
 import unittest
+import gc
+import weakref
 from concurrent.futures import Future
 from functools import partial
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from webdict.application import WebdictApplication
+from gi.repository import Gio, GObject
+
+from webdict.application import GLib, Gtk, WebdictApplication
 from webdict.wiktionary import WiktionaryError
 
 
 class DefinitionNavigationTests(unittest.TestCase):
     def setUp(self):
         self.app = Mock()
+        self.app.definition_transitioning = False
         self.root = Mock(current_url="https://en.wiktionary.org/wiki/cat")
         self.app.definition_page = self.root
         self.app.definition_navigation.get_visible_page.return_value = self.root
@@ -70,6 +75,78 @@ class DefinitionNavigationTests(unittest.TestCase):
             WebdictApplication.on_open(self.app)
         launcher.new.assert_called_once_with(page.current_url)
         launcher.new.return_value.launch.assert_called_once_with(self.app.window, None, None)
+
+    def test_root_disables_all_inner_controllers_and_push_restores_them(self):
+        bubble, capture = Mock(), Mock()
+        self.app.definition_navigation_controllers = [
+            (bubble, Gtk.PropagationPhase.BUBBLE),
+            (capture, Gtk.PropagationPhase.CAPTURE),
+        ]
+        stack = self.app.definition_navigation_stack
+        for count in (1, 2, 1):
+            stack.get_n_items.return_value = count
+            WebdictApplication._update_definition_swipes(self.app)
+            bubble.set_propagation_phase.assert_called_with(
+                Gtk.PropagationPhase.BUBBLE if count > 1 else Gtk.PropagationPhase.NONE,
+            )
+            capture.set_propagation_phase.assert_called_with(
+                Gtk.PropagationPhase.CAPTURE if count > 1 else Gtk.PropagationPhase.NONE,
+            )
+
+    def test_stack_subscription_survives_setup_and_handles_real_model_changes(self):
+        controller = Mock()
+        controller.get_propagation_phase.return_value = Gtk.PropagationPhase.BUBBLE
+        self.app.definition_navigation.observe_controllers.return_value = [controller]
+        self.app._update_definition_swipes = partial(WebdictApplication._update_definition_swipes, self.app)
+        self.app._on_definition_stack_changed = partial(WebdictApplication._on_definition_stack_changed, self.app)
+        references = []
+
+        def create_model():
+            model = Gio.ListStore.new(GObject.Object)
+            model.append(GObject.Object())
+            references.append(weakref.ref(model))
+            return model
+
+        self.app.definition_navigation.get_navigation_stack.side_effect = create_model
+        WebdictApplication._setup_definition_swipes(self.app)
+        gc.collect()
+        model = references[0]()
+        self.assertIsNotNone(model)
+        controller.set_propagation_phase.assert_called_with(Gtk.PropagationPhase.NONE)
+        model.append(GObject.Object())
+        controller.set_propagation_phase.assert_called_with(Gtk.PropagationPhase.BUBBLE)
+        model.remove(1)
+        # The stack shrinks before the transition finishes; keep handlers active.
+        controller.set_propagation_phase.assert_called_with(Gtk.PropagationPhase.BUBBLE)
+        with patch("webdict.application.GLib.idle_add") as idle_add:
+            WebdictApplication._on_definition_page_shown(self.app)
+            controller.set_propagation_phase.assert_called_with(Gtk.PropagationPhase.BUBBLE)
+            callback = idle_add.call_args.args[0]
+        self.assertEqual(callback(), GLib.SOURCE_REMOVE)
+        controller.set_propagation_phase.assert_called_with(Gtk.PropagationPhase.NONE)
+
+    def test_deferred_root_update_does_not_disable_newly_pushed_page(self):
+        controller = Mock()
+        self.app.definition_navigation_controllers = [(controller, Gtk.PropagationPhase.BUBBLE)]
+        self.app._update_definition_swipes = partial(WebdictApplication._update_definition_swipes, self.app)
+        self.app.definition_navigation_stack.get_n_items.return_value = 1
+        with patch("webdict.application.GLib.idle_add") as idle_add:
+            WebdictApplication._on_definition_page_shown(self.app)
+            callback = idle_add.call_args.args[0]
+        self.app.definition_navigation_stack.get_n_items.return_value = 2
+        callback()
+        controller.set_propagation_phase.assert_called_once_with(Gtk.PropagationPhase.BUBBLE)
+
+    def test_pending_idle_update_does_not_reset_controllers_during_transition(self):
+        controller = Mock()
+        self.app.definition_navigation_controllers = [(controller, Gtk.PropagationPhase.BUBBLE)]
+        self.app.definition_navigation_stack.get_n_items.return_value = 1
+        WebdictApplication._on_definition_page_showing(self.app)
+        WebdictApplication._update_definition_swipes(self.app)
+        controller.set_propagation_phase.assert_not_called()
+        self.app.definition_transitioning = False
+        WebdictApplication._update_definition_swipes(self.app)
+        controller.set_propagation_phase.assert_called_once_with(Gtk.PropagationPhase.NONE)
 
 
 if __name__ == "__main__":

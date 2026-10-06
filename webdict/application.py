@@ -54,6 +54,7 @@ class WebdictApplication(Adw.Application):
         self.split_view = builder.get_object("split_view")
         self.edition: EditionDropdown = builder.get_object("edition_dropdown")
         self.definition_navigation = builder.get_object("definition_navigation")
+        self._setup_definition_swipes()
         self.definition_page: DefinitionPage = builder.get_object("definition_page")
         self._connect_definition_page(self.definition_page)
         self.definition_navigation.connect("notify::visible-page", self._update_open_action)
@@ -116,6 +117,42 @@ class WebdictApplication(Adw.Application):
     def _connect_definition_page(self, page: DefinitionPage) -> None:
         page.connect("lookup-word", self.on_definition_word)
         page.connect("retry", self.on_definition_retry)
+        page.connect("showing", self._on_definition_page_showing)
+        page.connect("shown", self._on_definition_page_shown)
+
+    def _setup_definition_swipes(self) -> None:
+        self.definition_transitioning = False
+        self.definition_navigation_controllers = [
+            (controller, controller.get_propagation_phase())
+            for controller in self.definition_navigation.observe_controllers()
+        ]
+        # NavigationView holds this model weakly; retain the signal subscription.
+        self.definition_navigation_stack = self.definition_navigation.get_navigation_stack()
+        self.definition_navigation_stack.connect("items-changed", self._on_definition_stack_changed)
+        self._update_definition_swipes()
+
+    def _on_definition_stack_changed(self, *_args) -> None:
+        if self.definition_navigation_stack.get_n_items() > 1:
+            self._update_definition_swipes()
+
+    def _on_definition_page_shown(self, *_args) -> None:
+        # Stack changes happen inside the swipe's end callback. Wait for the
+        # transition and callback to finish before resetting its controllers.
+        self.definition_transitioning = False
+        GLib.idle_add(self._update_definition_swipes)
+
+    def _on_definition_page_showing(self, *_args) -> None:
+        self.definition_transitioning = True
+
+    def _update_definition_swipes(self, *_args) -> bool:
+        # Disable all inner event handlers at the root so events reach the
+        # outer split view. Disabling only GestureDrag leaves other handlers active.
+        enabled = self.definition_navigation_stack.get_n_items() > 1
+        if not enabled and self.definition_transitioning:
+            return GLib.SOURCE_REMOVE
+        for controller, phase in self.definition_navigation_controllers:
+            controller.set_propagation_phase(phase if enabled else Gtk.PropagationPhase.NONE)
+        return GLib.SOURCE_REMOVE
 
     def on_definition_word(self, source_page: DefinitionPage, word: str) -> None:
         source_page.result.stop_audio()
