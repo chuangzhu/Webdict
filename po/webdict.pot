@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: webdict\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 22:31+0800\n"
+"POT-Creation-Date: 2026-10-06 15:02+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,27 +85,27 @@ msgstr ""
 msgid "Open on Wiktionary"
 msgstr ""
 
-#: webdict/application.py:178
+#: webdict/application.py:180
 msgid "Something unexpected went wrong."
 msgstr ""
 
-#: webdict/application.py:194
+#: webdict/application.py:196
 msgid "Webdict contributors"
 msgstr ""
 
-#: webdict/application.py:196
+#: webdict/application.py:198
 msgid "A focused dictionary for every Wiktionary edition."
 msgstr ""
 
-#: webdict/application.py:201
+#: webdict/application.py:203
 msgid "Dictionary Data and Infrastructure"
 msgstr ""
 
-#: webdict/application.py:202
+#: webdict/application.py:204
 msgid "Wiktionary contributors"
 msgstr ""
 
-#: webdict/application.py:202
+#: webdict/application.py:204
 msgid "Wikimedia Foundation"
 msgstr ""
 
