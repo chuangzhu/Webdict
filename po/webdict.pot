@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: webdict\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-06 15:02+0800\n"
+"POT-Creation-Date: 2026-10-07 16:42+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -109,40 +109,44 @@ msgstr ""
 msgid "Wikimedia Foundation"
 msgstr ""
 
-#: webdict/result_text.py:105 webdict/result_text.py:321
+#: webdict/result_text.py:46
+msgid "Look Up"
+msgstr ""
+
+#: webdict/result_text.py:111 webdict/result_text.py:327
 msgid "Collapse section"
 msgstr ""
 
-#: webdict/result_text.py:142
+#: webdict/result_text.py:148
 msgid "quotations"
 msgstr ""
 
-#: webdict/result_text.py:146 webdict/result_text.py:210
-#: webdict/result_text.py:310
+#: webdict/result_text.py:152 webdict/result_text.py:216
+#: webdict/result_text.py:316
 msgid "Expand quotations"
 msgstr ""
 
-#: webdict/result_text.py:168 webdict/result_text.py:263
+#: webdict/result_text.py:174 webdict/result_text.py:269
 msgid "Play pronunciation"
 msgstr ""
 
-#: webdict/result_text.py:218
+#: webdict/result_text.py:224
 msgid "Audio playback is unavailable"
 msgstr ""
 
-#: webdict/result_text.py:233 webdict/result_text.py:253
+#: webdict/result_text.py:239 webdict/result_text.py:259
 msgid "Audio playback failed"
 msgstr ""
 
-#: webdict/result_text.py:263
+#: webdict/result_text.py:269
 msgid "Pause pronunciation"
 msgstr ""
 
-#: webdict/result_text.py:310
+#: webdict/result_text.py:316
 msgid "Collapse quotations"
 msgstr ""
 
-#: webdict/result_text.py:321
+#: webdict/result_text.py:327
 msgid "Expand section"
 msgstr ""
 

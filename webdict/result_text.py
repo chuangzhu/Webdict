@@ -6,7 +6,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gst", "1.0")
-from gi.repository import Gdk, GLib, GObject, Gst, Gtk, Pango
+from gi.repository import Gio, GLib, GObject, Gst, Gtk, Pango
 
 from .i18n import _
 from .wiktionary import Entry
@@ -31,18 +31,25 @@ class ResultTextView(Gtk.TextView):
         self.audio_buttons = []
         self.active_audio = None
         self.active_audio_button = None
-        definition_click = Gtk.GestureClick.new()
-        definition_click.set_button(Gdk.BUTTON_PRIMARY)
-        definition_click.connect("released", self.on_definition_click)
-        self.add_controller(definition_click)
+        self._create_lookup_menu()
 
-    def on_definition_click(self, _gesture, presses: int, x: float, y: float) -> None:
-        """Look up a word that was double-clicked in the definition."""
-        if presses != 2:
-            return
-        # Let GtkTextView's native double-click handler establish its word
-        # selection before reading it on the next main-loop iteration.
-        GLib.idle_add(self.lookup_selected_definition_word)
+    def _create_lookup_menu(self) -> None:
+        self.lookup_action = Gio.SimpleAction.new("lookup", None)
+        self.lookup_action.connect("activate", self.lookup_selected_definition_word)
+        self.lookup_action.set_enabled(self.text_buffer.get_has_selection())
+        self.text_buffer.connect("notify::has-selection", self._update_lookup_action)
+        actions = Gio.SimpleActionGroup.new()
+        actions.add_action(self.lookup_action)
+        self.insert_action_group("definition", actions)
+
+        menu = Gio.Menu.new()
+        item = Gio.MenuItem.new(_("Look Up"), "definition.lookup")
+        item.set_attribute_value("touch-icon", GLib.Variant("s", "system-search-symbolic"))
+        menu.append_item(item)
+        self.set_extra_menu(menu)
+
+    def _update_lookup_action(self, *_args) -> None:
+        self.lookup_action.set_enabled(self.text_buffer.get_has_selection())
 
     def toggle_definition_section(self, section_index: int) -> bool:
         if section_index in self.collapsed_sections:
@@ -53,15 +60,14 @@ class ResultTextView(Gtk.TextView):
         self._set_section_disclosure(section_index)
         return GLib.SOURCE_REMOVE
 
-    def lookup_selected_definition_word(self) -> bool:
+    def lookup_selected_definition_word(self, *_args) -> None:
         if not self.text_buffer.get_has_selection():
-            return GLib.SOURCE_REMOVE
+            return
         start, end = self.text_buffer.get_selection_bounds()
         word = self.text_buffer.get_text(start, end, False).strip()
         if not word:
-            return GLib.SOURCE_REMOVE
+            return
         self.emit("lookup-word", word)
-        return GLib.SOURCE_REMOVE
 
     def _create_text_styles(self) -> None:
         styles = {

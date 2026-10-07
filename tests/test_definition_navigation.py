@@ -16,7 +16,7 @@ class DefinitionNavigationTests(unittest.TestCase):
         self.app.definition_navigation.get_visible_page.return_value = self.root
         self.app._update_open_action = partial(WebdictApplication._update_open_action, self.app)
 
-    def test_double_click_pushes_page_without_replacing_source_text(self):
+    def test_lookup_pushes_page_without_replacing_source_text(self):
         self.root.edition_name = "English"
         self.root.edition_code = "en"
         page = Mock()
