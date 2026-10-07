@@ -43,7 +43,7 @@ class ResultTextView(Gtk.TextView):
         self.insert_action_group("definition", actions)
 
         menu = Gio.Menu.new()
-        item = Gio.MenuItem.new(_("Look Up"), "definition.lookup")
+        item = Gio.MenuItem.new(_("_Look Up"), "definition.lookup")
         item.set_attribute_value("touch-icon", GLib.Variant("s", "system-search-symbolic"))
         menu.append_item(item)
         self.set_extra_menu(menu)

@@ -74,3 +74,5 @@ msgstr "Afsluiten"
 msgid "Open on Wiktionary"
 msgstr "Openen op WikiWoordenboek"
 
+msgid "_Look Up"
+msgstr "_Opzoeken"

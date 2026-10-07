@@ -73,3 +73,6 @@ msgid "Quit"
 msgstr "बंद करें"
 msgid "Open on Wiktionary"
 msgstr "विक्षनरी पर खोलें"
+
+msgid "_Look Up"
+msgstr "_खोजें"

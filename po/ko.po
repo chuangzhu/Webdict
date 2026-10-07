@@ -74,3 +74,5 @@ msgstr "끝내기"
 msgid "Open on Wiktionary"
 msgstr "위키낱말사전에서 열기"
 
+msgid "_Look Up"
+msgstr "찾아보기(_L)"

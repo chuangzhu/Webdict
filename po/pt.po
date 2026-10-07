@@ -73,3 +73,6 @@ msgid "Quit"
 msgstr "Sair"
 msgid "Open on Wiktionary"
 msgstr "Abrir no Wikcionário"
+
+msgid "_Look Up"
+msgstr "_Consultar"

@@ -74,3 +74,5 @@ msgstr "Beenden"
 msgid "Open on Wiktionary"
 msgstr "Auf Wiktionary öffnen"
 
+msgid "_Look Up"
+msgstr "_Nachschlagen"

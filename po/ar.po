@@ -74,3 +74,5 @@ msgstr "إنهاء"
 msgid "Open on Wiktionary"
 msgstr "افتح في ويكاموس"
 
+msgid "_Look Up"
+msgstr "ا_بحث"

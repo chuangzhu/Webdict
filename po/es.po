@@ -74,3 +74,5 @@ msgstr "Salir"
 msgid "Open on Wiktionary"
 msgstr "Abrir en Wikcionario"
 
+msgid "_Look Up"
+msgstr "_Consultar"

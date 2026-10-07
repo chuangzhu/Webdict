@@ -74,3 +74,5 @@ msgstr "Выйти"
 msgid "Open on Wiktionary"
 msgstr "Открыть в Викисловаре"
 
+msgid "_Look Up"
+msgstr "_Найти"

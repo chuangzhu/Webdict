@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: webdict\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 16:42+0800\n"
+"POT-Creation-Date: 2026-10-07 17:17+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -110,7 +110,7 @@ msgid "Wikimedia Foundation"
 msgstr ""
 
 #: webdict/result_text.py:46
-msgid "Look Up"
+msgid "_Look Up"
 msgstr ""
 
 #: webdict/result_text.py:111 webdict/result_text.py:327

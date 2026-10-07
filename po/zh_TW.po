@@ -73,3 +73,6 @@ msgid "Quit"
 msgstr "結束"
 msgid "Open on Wiktionary"
 msgstr "在維基詞典中開啟"
+
+msgid "_Look Up"
+msgstr "查詞(_L)"

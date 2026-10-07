@@ -74,3 +74,5 @@ msgstr "退出"
 msgid "Open on Wiktionary"
 msgstr "在维基词典中打开"
 
+msgid "_Look Up"
+msgstr "查词(_L)"

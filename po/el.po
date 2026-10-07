@@ -74,3 +74,5 @@ msgstr "Έξοδος"
 msgid "Open on Wiktionary"
 msgstr "Άνοιγμα στο Βικιλεξικό"
 
+msgid "_Look Up"
+msgstr "_Αναζήτηση"

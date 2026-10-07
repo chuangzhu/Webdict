@@ -74,3 +74,5 @@ msgstr "終了"
 msgid "Open on Wiktionary"
 msgstr "ウィクショナリーで開く"
 
+msgid "_Look Up"
+msgstr "調べる(_L)"

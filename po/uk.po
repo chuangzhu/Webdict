@@ -73,3 +73,6 @@ msgid "Quit"
 msgstr "Вийти"
 msgid "Open on Wiktionary"
 msgstr "Відкрити у Вікісловнику"
+
+msgid "_Look Up"
+msgstr "_Знайти"

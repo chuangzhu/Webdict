@@ -74,3 +74,5 @@ msgstr "Thoát"
 msgid "Open on Wiktionary"
 msgstr "Mở trên Wiktionary"
 
+msgid "_Look Up"
+msgstr "_Tra cứu"
