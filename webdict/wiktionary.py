@@ -38,7 +38,7 @@ class Entry:
 class _ReadableHTML(HTMLParser):
     """Turn MediaWiki HTML into a small, safe rich-text representation."""
 
-    SKIP = {"style", "script", "table", "figure", "sup"}
+    SKIP = {"style", "script", "figure", "sup"}
     SKIP_CLASSES = {
         "mw-editsection", "mw-jump-link", "mw-empty-elt", "noprint",
         "metadata", "thumb", "NavFrame", "sister-project", "interproject",
