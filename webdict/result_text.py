@@ -9,7 +9,13 @@ gi.require_version("Gst", "1.0")
 from gi.repository import Gio, GLib, GObject, Gst, Gtk, Pango
 
 from .i18n import _
-from .wiktionary import Entry
+from .wiktionary import Entry, USER_AGENT
+
+
+def _playbin_source_setup(playbin: Gst.Element, source: Gst.Element) -> None:
+    if source.find_property('user-agent'):
+        source.set_property('user-agent', USER_AGENT)
+        logging.info("Applied user-agent to %s", source.get_factory().name)
 
 
 class ResultTextView(Gtk.TextView):
@@ -242,6 +248,7 @@ class ResultTextView(Gtk.TextView):
 
     def _create_audio_pipeline(self, url: str):
         player = Gst.ElementFactory.make("playbin", None)
+        player.connect("source-setup", _playbin_source_setup)
         if player is not None:
             player.set_property("uri", url)
             player.set_property("buffer-duration", 10 * Gst.SECOND)

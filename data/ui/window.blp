@@ -17,8 +17,6 @@ Adw.ApplicationWindow window {
   }
 
   content: Adw.MultiLayoutView layouts {
-    layout-name: "wide";
-
     Adw.Layout {
       name: "wide";
       content: Adw.NavigationSplitView split_view {
@@ -47,6 +45,8 @@ Adw.ApplicationWindow window {
         };
       };
     }
+
+    layout-name: "wide";
 
     [search]
     Adw.ToolbarView {
