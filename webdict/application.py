@@ -53,6 +53,8 @@ class WebdictApplication(Adw.Application):
         self.window.set_application(self)
         self.search = builder.get_object("search_entry")
         self.split_view = builder.get_object("split_view")
+        self.layouts = builder.get_object("layouts")
+        self.definition_sheet = builder.get_object("definition_sheet")
         self.edition: EditionDropdown = builder.get_object("edition_dropdown")
         self.definition_navigation = builder.get_object("definition_navigation")
         self.definition_swipes = NavigationSwipeWorkaround(self.definition_navigation)
@@ -158,7 +160,10 @@ class WebdictApplication(Adw.Application):
         self.search.remove_css_class("error")
         edition_name, code = self.edition.get_selected_edition()
         self.definition_navigation.replace([self.definition_page])
-        self.split_view.set_show_content(True)
+        if self.layouts.get_layout_name() == "narrow":
+            self.definition_sheet.set_open(True)
+        else:
+            self.split_view.set_show_content(True)
         self._lookup_definition(self.definition_page, word, edition_name, code)
 
     def _lookup_definition(self, page: DefinitionPage, word: str, edition_name: str, code: str) -> None:

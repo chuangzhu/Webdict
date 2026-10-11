@@ -58,6 +58,7 @@ Adw.ToolbarView definition_toolbar {
       child: Gtk.ScrolledWindow {
         vexpand: true;
         hscrollbar-policy: never;
+        propagate-natural-height: true;
         $WebdictResultTextView result_text {
           styles ["definition"]
           editable: false;

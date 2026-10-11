@@ -12,6 +12,7 @@ class SearchSuggestionsTests(unittest.TestCase):
     def setUp(self):
         # Drive timers and futures explicitly so each ordering is deterministic.
         self.app = Mock()
+        self.app.layouts.get_layout_name.return_value = "wide"
         self.app.search.get_text.return_value = "cat"
         self.app.edition.get_selected_edition.return_value = ("English", "en")
         self.app.definition_page.lookup_generation = 1
@@ -56,6 +57,17 @@ class SearchSuggestionsTests(unittest.TestCase):
         entry = SimpleNamespace(url="https://en.wiktionary.org/wiki/cat")
         future.set_result(entry)
         self.app.definition_page.show_entry.assert_called_once_with(entry)
+
+    def test_search_opens_sheet_in_narrow_layout(self):
+        self.app.layouts.get_layout_name.return_value = "narrow"
+        WebdictApplication.on_search(self.app)
+        self.app.definition_sheet.set_open.assert_called_once_with(True)
+        self.app.split_view.set_show_content.assert_not_called()
+
+    def test_search_shows_split_content_in_wide_layout(self):
+        WebdictApplication.on_search(self.app)
+        self.app.split_view.set_show_content.assert_called_once_with(True)
+        self.app.definition_sheet.set_open.assert_not_called()
 
     def test_enter_during_debounce_preserves_suggestion_request(self):
         self.change_text("cat")
