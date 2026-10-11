@@ -16,7 +16,7 @@ class DefinitionNavigationTests(unittest.TestCase):
         self.app.definition_navigation.get_visible_page.return_value = self.root
         self.app._update_open_action = partial(WebdictApplication._update_open_action, self.app)
 
-    def test_lookup_pushes_page_without_replacing_source_text(self):
+    def test_lookup_pushes_page_and_replaces_source_text(self):
         self.root.edition_name = "English"
         self.root.edition_code = "en"
         page = Mock()
@@ -25,7 +25,7 @@ class DefinitionNavigationTests(unittest.TestCase):
         self.app.definition_navigation.push.assert_called_once_with(page)
         self.app._lookup_definition.assert_called_once_with(page, "feline", "English", "en")
         self.root.result.render_entry.assert_not_called()
-        self.app.search.set_text.assert_not_called()
+        self.app.search.set_text.assert_called_once_with("feline")
         self.app.definition_navigation.replace.assert_not_called()
 
     def test_response_after_back_updates_only_its_own_page(self):

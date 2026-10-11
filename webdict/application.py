@@ -59,6 +59,7 @@ class WebdictApplication(Adw.Application):
         self.definition_page: DefinitionPage = builder.get_object("definition_page")
         self._connect_definition_page(self.definition_page)
         self.definition_navigation.connect("notify::visible-page", self._update_open_action)
+        self.definition_navigation.connect("popped", self._on_definition_popped)
         self.suggestion_stack = builder.get_object("suggestion_stack")
         self.suggestion_list = builder.get_object("suggestion_list")
         self.suggestion_timeout = None
@@ -120,6 +121,7 @@ class WebdictApplication(Adw.Application):
         page.connect("retry", self.on_definition_retry)
 
     def on_definition_word(self, source_page: DefinitionPage, word: str) -> None:
+        self.search.set_text(word)
         source_page.result.stop_audio()
         page = DefinitionPage()
         self._connect_definition_page(page)
@@ -128,6 +130,10 @@ class WebdictApplication(Adw.Application):
 
     def on_definition_retry(self, page: DefinitionPage) -> None:
         self._lookup_definition(page, page.word, page.edition_name, page.edition_code)
+
+    def _on_definition_popped(self, *_args) -> None:
+        page = self.definition_navigation.get_visible_page()
+        self.search.set_text(page.word)
 
     def _update_open_action(self, *_args) -> None:
         page = self.definition_navigation.get_visible_page()
