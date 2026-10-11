@@ -76,3 +76,12 @@ msgstr "विक्षनरी पर खोलें"
 
 msgid "_Look Up"
 msgstr "_खोजें"
+
+msgid "Find in Page"
+msgstr "पृष्ठ में खोजें"
+
+msgid "Previous Match"
+msgstr "पिछला मिलान"
+
+msgid "Next Match"
+msgstr "अगला मिलान"

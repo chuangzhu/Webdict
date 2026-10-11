@@ -76,3 +76,12 @@ msgstr "Buka di Wiktionary"
 
 msgid "_Look Up"
 msgstr "_Cari"
+
+msgid "Find in Page"
+msgstr "Cari di Halaman"
+
+msgid "Previous Match"
+msgstr "Kecocokan Sebelumnya"
+
+msgid "Next Match"
+msgstr "Kecocokan Berikutnya"

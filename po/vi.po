@@ -76,3 +76,12 @@ msgstr "Mở trên Wiktionary"
 
 msgid "_Look Up"
 msgstr "_Tra cứu"
+
+msgid "Find in Page"
+msgstr "Tìm trong trang"
+
+msgid "Previous Match"
+msgstr "Kết quả trước"
+
+msgid "Next Match"
+msgstr "Kết quả tiếp theo"

@@ -76,3 +76,12 @@ msgstr "위키낱말사전에서 열기"
 
 msgid "_Look Up"
 msgstr "찾아보기(_L)"
+
+msgid "Find in Page"
+msgstr "페이지에서 찾기"
+
+msgid "Previous Match"
+msgstr "이전 일치 항목"
+
+msgid "Next Match"
+msgstr "다음 일치 항목"

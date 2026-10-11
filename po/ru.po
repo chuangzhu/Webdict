@@ -76,3 +76,12 @@ msgstr "Открыть в Викисловаре"
 
 msgid "_Look Up"
 msgstr "_Найти"
+
+msgid "Find in Page"
+msgstr "Найти на странице"
+
+msgid "Previous Match"
+msgstr "Предыдущее совпадение"
+
+msgid "Next Match"
+msgstr "Следующее совпадение"

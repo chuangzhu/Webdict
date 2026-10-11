@@ -33,6 +33,10 @@ class WebdictApplication(Adw.Application):
         self.open_wiktionary_action.set_enabled(False)
         self.open_wiktionary_action.connect("activate", self.on_open)
         self.add_action(self.open_wiktionary_action)
+        find_action = Gio.SimpleAction.new("find-in-page", None)
+        find_action.connect("activate", self.on_find_in_page)
+        self.add_action(find_action)
+        self.set_accels_for_action("app.find-in-page", ["<primary>f"])
         quit_action = Gio.SimpleAction.new("quit", None)
         quit_action.connect("activate", lambda *_: self.quit())
         self.add_action(quit_action)
@@ -185,6 +189,11 @@ class WebdictApplication(Adw.Application):
             page.show_entry(entry)
         self._update_open_action()
         return GLib.SOURCE_REMOVE
+
+    def on_find_in_page(self, *_args) -> None:
+        page = self.definition_navigation.get_visible_page()
+        if page is not None:
+            page.open_find()
 
     def on_open(self, *_args) -> None:
         page = self.definition_navigation.get_visible_page()

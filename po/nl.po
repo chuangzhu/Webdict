@@ -76,3 +76,12 @@ msgstr "Openen op WikiWoordenboek"
 
 msgid "_Look Up"
 msgstr "_Opzoeken"
+
+msgid "Find in Page"
+msgstr "Zoeken op pagina"
+
+msgid "Previous Match"
+msgstr "Vorige overeenkomst"
+
+msgid "Next Match"
+msgstr "Volgende overeenkomst"

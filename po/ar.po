@@ -76,3 +76,12 @@ msgstr "افتح في ويكاموس"
 
 msgid "_Look Up"
 msgstr "ا_بحث"
+
+msgid "Find in Page"
+msgstr "بحث في الصفحة"
+
+msgid "Previous Match"
+msgstr "التطابق السابق"
+
+msgid "Next Match"
+msgstr "التطابق التالي"

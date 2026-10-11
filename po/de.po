@@ -76,3 +76,12 @@ msgstr "Auf Wiktionary öffnen"
 
 msgid "_Look Up"
 msgstr "_Nachschlagen"
+
+msgid "Find in Page"
+msgstr "In Seite suchen"
+
+msgid "Previous Match"
+msgstr "Vorheriger Treffer"
+
+msgid "Next Match"
+msgstr "Nächster Treffer"

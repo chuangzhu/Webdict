@@ -76,3 +76,12 @@ msgstr "Άνοιγμα στο Βικιλεξικό"
 
 msgid "_Look Up"
 msgstr "_Αναζήτηση"
+
+msgid "Find in Page"
+msgstr "Εύρεση στη σελίδα"
+
+msgid "Previous Match"
+msgstr "Προηγούμενο ταίριασμα"
+
+msgid "Next Match"
+msgstr "Επόμενο ταίριασμα"

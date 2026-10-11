@@ -39,6 +39,30 @@ class ResultTextView(Gtk.TextView):
         self.active_audio_button = None
         self._create_lookup_menu()
 
+    def find_text(self, query: str, *, backwards: bool = False, restart: bool = False) -> bool:
+        """Select the next visible, case-insensitive match, wrapping at the ends."""
+        if not query:
+            return False
+        buffer = self.text_buffer
+        bounds = buffer.get_selection_bounds()
+        if restart or not bounds:
+            position = buffer.get_end_iter() if backwards else buffer.get_start_iter()
+        else:
+            position = bounds[0] if backwards else bounds[1]
+        flags = Gtk.TextSearchFlags.CASE_INSENSITIVE | Gtk.TextSearchFlags.VISIBLE_ONLY
+        search = position.backward_search if backwards else position.forward_search
+        match = search(query, flags, None)
+        if not match:
+            position = buffer.get_end_iter() if backwards else buffer.get_start_iter()
+            search = position.backward_search if backwards else position.forward_search
+            match = search(query, flags, None)
+        if not match:
+            return False
+        start, end = match
+        buffer.select_range(start, end)
+        self.scroll_to_iter(start, 0.1, False, 0, 0)
+        return True
+
     def _create_lookup_menu(self) -> None:
         self.lookup_action = Gio.SimpleAction.new("lookup", None)
         self.lookup_action.connect("activate", self.lookup_selected_definition_word)

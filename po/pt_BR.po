@@ -76,3 +76,12 @@ msgstr "Abrir no Wikcionário"
 
 msgid "_Look Up"
 msgstr "_Consultar"
+
+msgid "Find in Page"
+msgstr "Localizar na página"
+
+msgid "Previous Match"
+msgstr "Correspondência anterior"
+
+msgid "Next Match"
+msgstr "Próxima correspondência"

@@ -12,6 +12,26 @@ Adw.ToolbarView definition_toolbar {
     }
   }
 
+  [top]
+  Gtk.SearchBar find_bar {
+    show-close-button: true;
+    child: Gtk.Box {
+      spacing: 6;
+      Gtk.SearchEntry find_entry {
+        placeholder-text: _("Find in Page");
+        hexpand: true;
+      }
+      Gtk.Button find_previous {
+        icon-name: "go-up-symbolic";
+        tooltip-text: _("Previous Match");
+      }
+      Gtk.Button find_next {
+        icon-name: "go-down-symbolic";
+        tooltip-text: _("Next Match");
+      }
+    };
+  }
+
   content: Gtk.Stack content_stack {
     vexpand: true;
     transition-type: crossfade;
@@ -76,5 +96,6 @@ Adw.ToolbarView definition_toolbar {
 }
 
 menu definition_menu {
+  item (_("Find in Page"), "app.find-in-page")
   item (_("Open on Wiktionary"), "app.open-wiktionary")
 }

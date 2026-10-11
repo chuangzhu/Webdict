@@ -48,3 +48,51 @@ class ResultTextMenuTests(unittest.TestCase):
         buffer.select_range(buffer.get_start_iter(), buffer.get_end_iter())
         self.view.lookup_action.activate(None)
         self.view.emit.assert_not_called()
+
+
+class FindInPageTests(unittest.TestCase):
+    def setUp(self):
+        self.view = SimpleNamespace(text_buffer=Gtk.TextBuffer(), scroll_to_iter=Mock())
+        self.view.text_buffer.set_text("Cat dog cat")
+
+    def find(self, query="cat", **kwargs):
+        return ResultTextView.find_text(self.view, query, **kwargs)
+
+    def selection(self):
+        return tuple(i.get_offset() for i in self.view.text_buffer.get_selection_bounds())
+
+    def test_case_insensitive_next_previous_and_wrap(self):
+        self.assertTrue(self.find(restart=True))
+        self.assertEqual(self.selection(), (0, 3))
+        self.assertTrue(self.find())
+        self.assertEqual(self.selection(), (8, 11))
+        self.assertTrue(self.find())
+        self.assertEqual(self.selection(), (0, 3))
+        self.assertTrue(self.find(backwards=True))
+        self.assertEqual(self.selection(), (8, 11))
+        self.assertTrue(self.find(backwards=True))
+        self.assertEqual(self.selection(), (0, 3))
+
+    def test_restart_searches_from_beginning(self):
+        self.find("dog", restart=True)
+        self.assertTrue(self.find(restart=True))
+        self.assertEqual(self.selection(), (0, 3))
+
+    def test_missing_and_empty_queries_do_not_scroll(self):
+        self.assertFalse(self.find("missing"))
+        self.assertFalse(self.find(""))
+        self.view.scroll_to_iter.assert_not_called()
+
+    def test_collapsed_text_is_skipped(self):
+        buffer = self.view.text_buffer
+        tag = buffer.create_tag("hidden", invisible=True)
+        buffer.apply_tag(tag, buffer.get_start_iter(), buffer.get_iter_at_offset(3))
+        self.assertTrue(self.find(restart=True))
+        self.assertEqual(self.selection(), (8, 11))
+
+    def test_unicode_match_uses_buffer_offsets(self):
+        self.view.text_buffer.set_text("猫 café CAFÉ")
+        self.assertTrue(self.find("café", restart=True))
+        self.assertEqual(self.selection(), (2, 6))
+        self.assertTrue(self.find("café"))
+        self.assertEqual(self.selection(), (7, 11))
