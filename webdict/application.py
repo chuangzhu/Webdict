@@ -16,7 +16,6 @@ from . import __version__, quirks
 from .definition_page import DefinitionPage
 from .edition_dropdown import EditionDropdown  # Register the widget for Gtk.Builder.
 from .i18n import _
-from .navigation_view import NavigationSwipeWorkaround
 from .wiktionary import Entry, WiktionaryError, lookup, search_suggestions
 
 
@@ -57,7 +56,6 @@ class WebdictApplication(Adw.Application):
         self.definition_sheet = builder.get_object("definition_sheet")
         self.edition: EditionDropdown = builder.get_object("edition_dropdown")
         self.definition_navigation = builder.get_object("definition_navigation")
-        self.definition_swipes = NavigationSwipeWorkaround(self.definition_navigation)
         self.definition_page: DefinitionPage = builder.get_object("definition_page")
         self._connect_definition_page(self.definition_page)
         self.definition_navigation.connect("notify::visible-page", self._update_open_action)

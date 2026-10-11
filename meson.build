@@ -46,7 +46,6 @@ python.install_sources(
   'webdict/application.py',
   'webdict/edition_dropdown.py',
   'webdict/definition_page.py',
-  'webdict/navigation_view.py',
   'webdict/result_text.py',
   'webdict/wiktionary.py',
   'webdict/quirks.py',
