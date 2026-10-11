@@ -10,7 +10,7 @@ from webdict.wiktionary import lookup, search_suggestions
 
 class SearchSuggestionsTests(unittest.TestCase):
     def setUp(self):
-        # Drive timers and futures explicitly so each ordering is deterministic.
+        # Drive futures explicitly so each ordering is deterministic.
         self.app = Mock()
         self.app.layouts.get_layout_name.return_value = "wide"
         self.app.search.get_text.return_value = "cat"
@@ -19,7 +19,6 @@ class SearchSuggestionsTests(unittest.TestCase):
         self.app.definition_page.start_lookup.return_value = 1
         self.app.definition_page.current_url = None
         self.app.definition_navigation.get_visible_page.return_value = self.app.definition_page
-        self.app.suggestion_timeout = None
         self.app.suggestion_generation = 0
         self.app.suggestion_list.get_row_at_index.return_value = None
         for name in ("request_suggestions", "finish_suggestions", "finish_search", "_lookup_definition", "_update_open_action"):
@@ -32,8 +31,6 @@ class SearchSuggestionsTests(unittest.TestCase):
             return future
 
         self.app.executor.submit.side_effect = submit
-        self.timeout_add = self.enterContext(patch("webdict.application.GLib.timeout_add", return_value=42))
-        self.source_remove = self.enterContext(patch("webdict.application.GLib.source_remove"))
         self.enterContext(patch("webdict.application.GLib.idle_add", side_effect=lambda callback, *args: callback(*args)))
         self.enterContext(patch("webdict.application.Gtk.Label"))
         self.enterContext(patch("webdict.application.Gtk.ListBoxRow"))
@@ -42,9 +39,7 @@ class SearchSuggestionsTests(unittest.TestCase):
         self.app.search.get_text.return_value = text
         WebdictApplication.on_search_changed(self.app)
 
-    def fire_debounce(self):
-        _delay, callback, generation = self.timeout_add.call_args.args
-        callback(generation)
+    def suggestion_future(self):
         function, _args, future = self.requests[-1]
         self.assertIs(function, search_suggestions)
         return future
@@ -69,36 +64,50 @@ class SearchSuggestionsTests(unittest.TestCase):
         self.app.split_view.set_show_content.assert_called_once_with(True)
         self.app.definition_sheet.set_open.assert_not_called()
 
-    def test_enter_during_debounce_preserves_suggestion_request(self):
-        self.change_text("cat")
+    def test_enter_before_search_changed_allows_later_suggestions(self):
         self.press_enter_and_finish_definition()
-        self.source_remove.assert_not_called()
-        self.assertEqual(self.app.suggestion_timeout, 42)
-        self.fire_debounce().set_result(("cat", "caterpillar"))
+        self.change_text("cat")
+        self.suggestion_future().set_result(("cat", "caterpillar"))
         self.app.suggestion_stack.set_visible_child_name.assert_called_with("suggestions")
         self.assertEqual(self.app.suggestion_list.append.call_count, 2)
 
     def test_enter_during_request_allows_suggestions_to_finish(self):
         self.change_text("cat")
-        future = self.fire_debounce()
+        future = self.suggestion_future()
         self.app.suggestion_stack.set_visible_child_name.assert_called_with("loading")
         self.press_enter_and_finish_definition()
         future.set_result(("cat",))
         self.app.suggestion_stack.set_visible_child_name.assert_called_with("suggestions")
 
-    def test_debounce_replaces_pending_timer(self):
-        self.change_text("ca")
+    def test_search_changed_requests_suggestions_without_extra_timer(self):
         self.change_text("cat")
-        self.source_remove.assert_called_once_with(42)
-        self.assertEqual(self.app.suggestion_generation, 2)
-        self.fire_debounce()
+        self.assertEqual(len(self.requests), 1)
         self.assertEqual(self.requests[-1][1], ("cat", "en"))
+
+    def test_edition_change_rejects_previous_edition_response(self):
+        self.change_text("cat")
+        old_future = self.suggestion_future()
+        self.app.edition.get_selected_edition.return_value = ("French", "fr")
+        WebdictApplication.on_search_changed(self.app)
+        self.assertEqual(self.requests[-1][1], ("cat", "fr"))
+        self.suggestion_future().set_result(("chat",))
+        self.app.suggestion_stack.set_visible_child_name.reset_mock()
+        old_future.set_result(("cat",))
+        self.app.suggestion_stack.set_visible_child_name.assert_not_called()
+
+    def test_text_change_before_debounced_signal_rejects_old_response(self):
+        self.change_text("ca")
+        old_future = self.suggestion_future()
+        self.app.search.get_text.return_value = "cat"
+        self.app.suggestion_stack.set_visible_child_name.reset_mock()
+        old_future.set_result(("car",))
+        self.app.suggestion_stack.set_visible_child_name.assert_not_called()
 
     def test_old_response_does_not_replace_new_suggestions(self):
         self.change_text("ca")
-        old_future = self.fire_debounce()
+        old_future = self.suggestion_future()
         self.change_text("cat")
-        self.fire_debounce().set_result(("cat",))
+        self.suggestion_future().set_result(("cat",))
         self.app.suggestion_stack.set_visible_child_name.reset_mock()
         old_future.set_result(("car",))
         self.app.suggestion_stack.set_visible_child_name.assert_not_called()
@@ -106,7 +115,7 @@ class SearchSuggestionsTests(unittest.TestCase):
 
     def test_request_failure_stops_spinner(self):
         self.change_text("cat")
-        self.fire_debounce().set_exception(RuntimeError("network failed"))
+        self.suggestion_future().set_exception(RuntimeError("network failed"))
         self.app.suggestion_stack.set_visible_child_name.assert_called_with("empty")
 
 

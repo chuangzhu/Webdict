@@ -62,7 +62,6 @@ class WebdictApplication(Adw.Application):
         self.definition_navigation.connect("popped", self._on_definition_popped)
         self.suggestion_stack = builder.get_object("suggestion_stack")
         self.suggestion_list = builder.get_object("suggestion_list")
-        self.suggestion_timeout = None
         self.suggestion_generation = 0
 
         self.search.connect("activate", self.on_search)
@@ -73,15 +72,10 @@ class WebdictApplication(Adw.Application):
         self.search.grab_focus()
 
     def on_search_changed(self, *_args) -> None:
-        if self.suggestion_timeout is not None:
-            GLib.source_remove(self.suggestion_timeout)
-            self.suggestion_timeout = None
         self.suggestion_generation += 1
-        generation = self.suggestion_generation
-        self.suggestion_timeout = GLib.timeout_add(250, self.request_suggestions, generation)
+        self.request_suggestions(self.suggestion_generation)
 
-    def request_suggestions(self, generation: int) -> bool:
-        self.suggestion_timeout = None
+    def request_suggestions(self, generation: int) -> None:
         query = self.search.get_text().strip()
         self.suggestion_stack.set_visible_child_name("loading")
         _name, code = self.edition.get_selected_edition()
@@ -89,7 +83,6 @@ class WebdictApplication(Adw.Application):
         future.add_done_callback(
             lambda f: GLib.idle_add(self.finish_suggestions, f, generation, query)
         )
-        return GLib.SOURCE_REMOVE
 
     def finish_suggestions(self, future, generation: int, query: str) -> bool:
         if generation != self.suggestion_generation or query != self.search.get_text().strip():
