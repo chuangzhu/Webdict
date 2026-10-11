@@ -105,8 +105,8 @@ class WebdictApplication(Adw.Application):
         return GLib.SOURCE_REMOVE
 
     def on_suggestion_activated(self, _list, row) -> None:
-        self.search.set_text(row.suggestion)
-        self.search.set_position(-1)
+        if self.search.get_text() != row.suggestion:
+            self.search.set_text(row.suggestion)
         self.on_search()
 
     def _connect_definition_page(self, page: DefinitionPage) -> None:
