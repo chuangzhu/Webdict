@@ -6,7 +6,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gst", "1.0")
-from gi.repository import Gio, GLib, GObject, Gst, Gtk, Pango
+from gi.repository import Gdk, Gio, GLib, GObject, Gst, Gtk, Pango
 
 from .i18n import _
 from .wiktionary import Entry, USER_AGENT
@@ -22,6 +22,7 @@ class ResultTextView(Gtk.TextView):
     __gtype_name__ = "WebdictResultTextView"
     __gsignals__ = {
         "lookup-word": (GObject.SignalFlags.RUN_LAST, None, (str,)),
+        "activate-link": (GObject.SignalFlags.RUN_LAST, None, (str,)),
     }
 
     def __init__(self, **kwargs) -> None:
@@ -38,6 +39,63 @@ class ResultTextView(Gtk.TextView):
         self.active_audio = None
         self.active_audio_button = None
         self._create_lookup_menu()
+        self.link_tags = {}
+        self._update_link_color()
+        click = Gtk.GestureClick.new()
+        click.set_button(1)
+        click.connect("released", self._on_link_released)
+        self.add_controller(click)
+        motion = Gtk.EventControllerMotion.new()
+        motion.connect("motion", self._on_link_motion)
+        motion.connect("leave", lambda *_: self.set_cursor_from_name("text"))
+        self.add_controller(motion)
+        keys = Gtk.EventControllerKey.new()
+        keys.connect("key-pressed", self._on_link_key)
+        self.add_controller(keys)
+
+    def do_css_changed(self, change) -> None:
+        Gtk.TextView.do_css_changed(self, change)
+        if hasattr(self, "text_buffer"):
+            self._update_link_color()
+
+    def _update_link_color(self) -> None:
+        found, color = self.get_style_context().lookup_color("accent_color")
+        tag = self.text_buffer.get_tag_table().lookup("link")
+        if tag is not None:
+            if found:
+                tag.set_property("foreground-rgba", color)
+            else:
+                tag.set_property("foreground-set", False)
+
+    def _link_at_iter(self, iterator) -> str | None:
+        return next((self.link_tags[tag] for tag in iterator.get_tags() if tag in self.link_tags), None)
+
+    def _link_at_pointer(self, x, y) -> str | None:
+        bx, by = self.window_to_buffer_coords(Gtk.TextWindowType.WIDGET, int(x), int(y))
+        on_text, iterator, _trailing = self.get_iter_at_position(bx, by)
+        return self._link_at_iter(iterator) if on_text else None
+
+    def _on_link_released(self, _gesture, n_press, x, y) -> None:
+        if n_press != 1 or self.text_buffer.get_has_selection():
+            return
+        href = self._link_at_pointer(x, y)
+        if href:
+            self.emit("activate-link", href)
+
+    def _on_link_motion(self, _controller, x, y) -> None:
+        self.set_cursor_from_name("pointer" if self._link_at_pointer(x, y) else "text")
+
+    def _on_link_key(self, _controller, keyval, _keycode, _modifiers) -> bool:
+        if keyval not in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
+            return False
+        if self.text_buffer.get_has_selection():
+            return False
+        iterator = self.text_buffer.get_iter_at_mark(self.text_buffer.get_insert())
+        href = self._link_at_iter(iterator)
+        if href:
+            self.emit("activate-link", href)
+            return True
+        return False
 
     def find_text(self, query: str, *, backwards: bool = False, restart: bool = False) -> bool:
         """Select the next visible, case-insensitive match, wrapping at the ends."""
@@ -118,6 +176,10 @@ class ResultTextView(Gtk.TextView):
     def render_entry(self, entry: Entry) -> None:
         self.release_audio()
         self.text_buffer.set_text("")
+        for tag in self.link_tags:
+            self.text_buffer.get_tag_table().remove(tag)
+        self.link_tags.clear()
+        self.set_cursor_from_name("text")
         self.definition_sections = []
         self.collapsed_sections = set()
         self.definition_quotations = []
@@ -215,11 +277,18 @@ class ResultTextView(Gtk.TextView):
                 self.add_child_at_anchor(button, anchor)
                 self.audio_buttons.append(button)
             position = self.text_buffer.get_end_iter()
+            link_start = position.get_offset()
             if run.text and run.tags:
                 tags = [self.text_buffer.get_tag_table().lookup(name) for name in run.tags]
                 self.text_buffer.insert_with_tags(position, run.text, *tags)
             elif run.text:
                 self.text_buffer.insert(position, run.text)
+            if run.href and run.text:
+                tag = self.text_buffer.create_tag(None)
+                self.link_tags[tag] = run.href
+                self.text_buffer.apply_tag(
+                    tag, self.text_buffer.get_iter_at_offset(link_start), self.text_buffer.get_end_iter()
+                )
             heading_style = run_heading
             in_quotation = run_quotation
 

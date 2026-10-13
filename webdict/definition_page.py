@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from urllib.parse import unquote, urljoin, urlsplit
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -39,6 +41,7 @@ class DefinitionPage(Adw.NavigationPage):
         builder.get_object("find_next").connect("clicked", lambda *_: self._find())
         builder.get_object("find_previous").connect("clicked", lambda *_: self._find(backwards=True))
         builder.get_object("retry_button").connect("clicked", lambda *_: self.emit("retry"))
+        self.result.connect("activate-link", self._on_activate_link)
         self.result.connect("lookup-word", lambda _view, word: self.emit("lookup-word", word))
         self.connect("hidden", lambda *_: self.result.release_audio())
         self.word = ""
@@ -86,3 +89,18 @@ class DefinitionPage(Adw.NavigationPage):
             return
         if not self.result.find_text(query, backwards=backwards, restart=restart):
             self.find_entry.add_css_class("error")
+
+    def _on_activate_link(self, _view, href: str) -> None:
+        if not self.current_url:
+            return
+        url = urljoin(self.current_url, href)
+        target = urlsplit(url)
+        if target.scheme not in {"http", "https"}:
+            return
+        source = urlsplit(self.current_url)
+        if target.netloc == source.netloc and target.path.startswith("/wiki/"):
+            word = unquote(target.path[len("/wiki/"):]).replace("_", " ")
+            if word and ":" not in word and target.path != source.path:
+                self.emit("lookup-word", word)
+                return
+        Gtk.UriLauncher.new(url).launch(self.get_root(), None, None)

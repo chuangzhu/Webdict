@@ -25,6 +25,7 @@ class TextRun:
     text: str
     tags: tuple[str, ...] = ()
     audio_url: str | None = None
+    href: str | None = None
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,7 @@ class _ReadableHTML(HTMLParser):
         self.skip_depth = 0
         self.list_depth = 0
         self.active: list[str] = []
+        self.href: str | None = None
         self.quotation_list_depth: int | None = None
         self.audio_sources: list[tuple[str, str]] | None = None
 
@@ -61,11 +63,11 @@ class _ReadableHTML(HTMLParser):
         if not text:
             return
         tags = tuple(self.active)
-        if self.runs and self.runs[-1].tags == tags and self.runs[-1].audio_url is None:
+        if self.runs and self.runs[-1].tags == tags and self.runs[-1].audio_url is None and self.runs[-1].href == self.href:
             previous = self.runs[-1]
-            self.runs[-1] = TextRun(previous.text + text, tags)
+            self.runs[-1] = TextRun(previous.text + text, tags, href=self.href)
         else:
-            self.runs.append(TextRun(text, tags))
+            self.runs.append(TextRun(text, tags, href=self.href))
 
     def _newline(self, count: int = 1) -> None:
         while self.runs and not self.runs[-1].text and not self.runs[-1].audio_url:
@@ -101,7 +103,7 @@ class _ReadableHTML(HTMLParser):
             if self.runs:
                 trimmed = re.sub(r"\n\s*•\s*$", "", self.runs[-1].text)
                 previous = self.runs[-1]
-                self.runs[-1] = TextRun(trimmed, previous.tags, previous.audio_url)
+                self.runs[-1] = TextRun(trimmed, previous.tags, previous.audio_url, previous.href)
                 if not trimmed:
                     self.runs.pop()
             self._append(" ")
@@ -128,6 +130,7 @@ class _ReadableHTML(HTMLParser):
             self.active.append("code")
         elif tag == "a":
             self.active.append("link")
+            self.href = attributes.get("href")
 
     def handle_endtag(self, tag: str) -> None:
         if tag == "audio" and self.audio_sources is not None:
@@ -147,6 +150,8 @@ class _ReadableHTML(HTMLParser):
                 return
             self.skip_depth = max(0, self.skip_depth - 1)
             return
+        if tag == "a":
+            self.href = None
         style = {
             "b": "bold", "strong": "bold", "i": "italic", "em": "italic",
             "code": "code", "kbd": "code", "samp": "code", "a": "link",
@@ -187,8 +192,8 @@ class _ReadableHTML(HTMLParser):
         while runs and not runs[-1].text.strip() and not runs[-1].audio_url:
             runs.pop()
         if runs:
-            runs[0] = TextRun(runs[0].text.lstrip(), runs[0].tags, runs[0].audio_url)
-            runs[-1] = TextRun(runs[-1].text.rstrip(), runs[-1].tags, runs[-1].audio_url)
+            runs[0] = TextRun(runs[0].text.lstrip(), runs[0].tags, runs[0].audio_url, runs[0].href)
+            runs[-1] = TextRun(runs[-1].text.rstrip(), runs[-1].tags, runs[-1].audio_url, runs[-1].href)
         return tuple(run for run in runs if run.text or run.audio_url)
 
 
