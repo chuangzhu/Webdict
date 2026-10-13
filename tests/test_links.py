@@ -42,14 +42,33 @@ class LinkTests(unittest.TestCase):
         DefinitionPage._on_activate_link(page, None, '/wiki/caf%C3%A9_au_lait#French')
         page.emit.assert_called_once_with('lookup-word', 'café au lait')
 
-    def test_external_and_namespace_links_launch_browser(self):
-        page = SimpleNamespace(current_url='https://en.wiktionary.org/wiki/cat', emit=Mock(), get_root=Mock())
-        with patch('webdict.definition_page.Gtk.UriLauncher') as launcher:
-            DefinitionPage._on_activate_link(page, None, '//example.org/example')
-            launcher.new.assert_called_with('https://example.org/example')
-            DefinitionPage._on_activate_link(page, None, '/wiki/Help:Contents')
-            launcher.new.assert_called_with('https://en.wiktionary.org/wiki/Help:Contents')
+    def test_external_and_namespace_links_prompt_before_browser(self):
+        page = SimpleNamespace(current_url='https://en.wiktionary.org/wiki/cat', emit=Mock(),
+                               confirm_open_browser=Mock())
+        DefinitionPage._on_activate_link(page, None, '//example.org/example')
+        page.confirm_open_browser.assert_called_with('https://example.org/example')
+        DefinitionPage._on_activate_link(page, None, '/wiki/Help:Contents')
+        page.confirm_open_browser.assert_called_with('https://en.wiktionary.org/wiki/Help:Contents')
         page.emit.assert_not_called()
+
+    def test_browser_launch_requires_explicit_open_response(self):
+        page = SimpleNamespace(get_root=Mock())
+        url = 'https://example.org/example?a=1&b=2'
+        with patch('webdict.definition_page.Adw.AlertDialog') as alert, \
+                patch('webdict.definition_page.Gtk.UriLauncher') as launcher:
+            DefinitionPage.confirm_open_browser(page, url)
+            alert.assert_called_once_with(heading='Open in Browser?', body=url)
+            dialog = alert.return_value
+            dialog.set_default_response.assert_called_once_with('cancel')
+            dialog.set_close_response.assert_called_once_with('cancel')
+            dialog.present.assert_called_once_with(page.get_root.return_value)
+            launcher.new.assert_not_called()
+            _signal, response = dialog.connect.call_args.args
+            response(dialog, 'cancel')
+            launcher.new.assert_not_called()
+            response(dialog, 'open')
+            launcher.new.assert_called_once_with(url)
+            launcher.new.return_value.launch.assert_called_once_with(page.get_root.return_value, None, None)
 
     def test_non_web_targets_are_ignored(self):
         page = SimpleNamespace(current_url='https://en.wiktionary.org/wiki/cat', emit=Mock())

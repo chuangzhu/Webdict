@@ -85,3 +85,12 @@ msgstr "Correspondência anterior"
 
 msgid "Next Match"
 msgstr "Correspondência seguinte"
+
+msgid "Open in Browser?"
+msgstr "Abrir no navegador?"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Open in Browser"
+msgstr "Abrir no navegador"

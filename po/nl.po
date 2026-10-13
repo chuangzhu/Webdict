@@ -85,3 +85,12 @@ msgstr "Vorige overeenkomst"
 
 msgid "Next Match"
 msgstr "Volgende overeenkomst"
+
+msgid "Open in Browser?"
+msgstr "Openen in browser?"
+
+msgid "Cancel"
+msgstr "Annuleren"
+
+msgid "Open in Browser"
+msgstr "Openen in browser"

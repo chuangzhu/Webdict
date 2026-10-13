@@ -85,3 +85,12 @@ msgstr "Попередній збіг"
 
 msgid "Next Match"
 msgstr "Наступний збіг"
+
+msgid "Open in Browser?"
+msgstr "Відкрити у браузері?"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Open in Browser"
+msgstr "Відкрити у браузері"

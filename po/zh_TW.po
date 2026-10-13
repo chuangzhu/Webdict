@@ -85,3 +85,12 @@ msgstr "上一個符合項目"
 
 msgid "Next Match"
 msgstr "下一個符合項目"
+
+msgid "Open in Browser?"
+msgstr "在瀏覽器中開啟？"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Open in Browser"
+msgstr "在瀏覽器中開啟"

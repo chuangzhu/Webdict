@@ -85,3 +85,12 @@ msgstr "Occurrence précédente"
 
 msgid "Next Match"
 msgstr "Occurrence suivante"
+
+msgid "Open in Browser?"
+msgstr "Ouvrir dans le navigateur ?"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Open in Browser"
+msgstr "Ouvrir dans le navigateur"

@@ -85,3 +85,12 @@ msgstr "Kecocokan Sebelumnya"
 
 msgid "Next Match"
 msgstr "Kecocokan Berikutnya"
+
+msgid "Open in Browser?"
+msgstr "Buka di Peramban?"
+
+msgid "Cancel"
+msgstr "Batal"
+
+msgid "Open in Browser"
+msgstr "Buka di Peramban"

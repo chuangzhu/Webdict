@@ -103,4 +103,20 @@ class DefinitionPage(Adw.NavigationPage):
             if word and ":" not in word and target.path != source.path:
                 self.emit("lookup-word", word)
                 return
-        Gtk.UriLauncher.new(url).launch(self.get_root(), None, None)
+        self.confirm_open_browser(url)
+
+    def confirm_open_browser(self, url: str) -> None:
+        parent = self.get_root()
+        dialog = Adw.AlertDialog(heading=_("Open in Browser?"), body=url)
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("open", _("Open in Browser"))
+        dialog.set_default_response("cancel")
+        dialog.set_close_response("cancel")
+        dialog.set_response_appearance("open", Adw.ResponseAppearance.SUGGESTED)
+
+        def on_response(_dialog, response):
+            if response == "open":
+                Gtk.UriLauncher.new(url).launch(parent, None, None)
+
+        dialog.connect("response", on_response)
+        dialog.present(parent)

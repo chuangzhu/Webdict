@@ -85,3 +85,12 @@ msgstr "التطابق السابق"
 
 msgid "Next Match"
 msgstr "التطابق التالي"
+
+msgid "Open in Browser?"
+msgstr "فتح في المتصفح؟"
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Open in Browser"
+msgstr "فتح في المتصفح"

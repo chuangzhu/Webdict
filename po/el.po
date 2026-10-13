@@ -85,3 +85,12 @@ msgstr "Προηγούμενο ταίριασμα"
 
 msgid "Next Match"
 msgstr "Επόμενο ταίριασμα"
+
+msgid "Open in Browser?"
+msgstr "Άνοιγμα στον περιηγητή;"
+
+msgid "Cancel"
+msgstr "Ακύρωση"
+
+msgid "Open in Browser"
+msgstr "Άνοιγμα στον περιηγητή"

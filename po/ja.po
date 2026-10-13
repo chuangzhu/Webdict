@@ -85,3 +85,12 @@ msgstr "前の一致"
 
 msgid "Next Match"
 msgstr "次の一致"
+
+msgid "Open in Browser?"
+msgstr "ブラウザーで開きますか？"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Open in Browser"
+msgstr "ブラウザーで開く"

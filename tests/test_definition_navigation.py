@@ -66,10 +66,8 @@ class DefinitionNavigationTests(unittest.TestCase):
     def test_open_wiktionary_uses_visible_page_url(self):
         page = Mock(current_url="https://fr.wiktionary.org/wiki/chat")
         self.app.definition_navigation.get_visible_page.return_value = page
-        with patch("webdict.application.Gtk.UriLauncher") as launcher:
-            WebdictApplication.on_open(self.app)
-        launcher.new.assert_called_once_with(page.current_url)
-        launcher.new.return_value.launch.assert_called_once_with(self.app.window, None, None)
+        WebdictApplication.on_open(self.app)
+        page.confirm_open_browser.assert_called_once_with(page.current_url)
 
 
 if __name__ == "__main__":

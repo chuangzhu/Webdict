@@ -85,3 +85,12 @@ msgstr "पिछला मिलान"
 
 msgid "Next Match"
 msgstr "अगला मिलान"
+
+msgid "Open in Browser?"
+msgstr "ब्राउज़र में खोलें?"
+
+msgid "Cancel"
+msgstr "रद्द करें"
+
+msgid "Open in Browser"
+msgstr "ब्राउज़र में खोलें"

@@ -85,3 +85,12 @@ msgstr "이전 일치 항목"
 
 msgid "Next Match"
 msgstr "다음 일치 항목"
+
+msgid "Open in Browser?"
+msgstr "브라우저에서 여시겠습니까?"
+
+msgid "Cancel"
+msgstr "취소"
+
+msgid "Open in Browser"
+msgstr "브라우저에서 열기"

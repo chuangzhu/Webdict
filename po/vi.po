@@ -85,3 +85,12 @@ msgstr "Kết quả trước"
 
 msgid "Next Match"
 msgstr "Kết quả tiếp theo"
+
+msgid "Open in Browser?"
+msgstr "Mở trong trình duyệt?"
+
+msgid "Cancel"
+msgstr "Hủy"
+
+msgid "Open in Browser"
+msgstr "Mở trong trình duyệt"

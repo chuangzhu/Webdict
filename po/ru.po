@@ -85,3 +85,12 @@ msgstr "Предыдущее совпадение"
 
 msgid "Next Match"
 msgstr "Следующее совпадение"
+
+msgid "Open in Browser?"
+msgstr "Открыть в браузере?"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Open in Browser"
+msgstr "Открыть в браузере"

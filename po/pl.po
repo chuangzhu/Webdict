@@ -85,3 +85,12 @@ msgstr "Poprzednie dopasowanie"
 
 msgid "Next Match"
 msgstr "Następne dopasowanie"
+
+msgid "Open in Browser?"
+msgstr "Otworzyć w przeglądarce?"
+
+msgid "Cancel"
+msgstr "Anuluj"
+
+msgid "Open in Browser"
+msgstr "Otwórz w przeglądarce"
