@@ -36,12 +36,14 @@ Adw.ApplicationWindow window {
 
     Adw.Layout {
       name: "narrow";
-      content: Adw.BottomSheet definition_sheet {
-        show-drag-handle: false;
-        content: Adw.LayoutSlot { id: "search"; };
-        sheet: Adw.LayoutSlot {
-          id: "definition";
-          height-request: 400;
+      content: Adw.Bin sheet_swipe_host {
+        child: Adw.BottomSheet definition_sheet {
+          show-drag-handle: false;
+          content: Adw.LayoutSlot { id: "search"; };
+          sheet: Adw.LayoutSlot {
+            id: "definition";
+            height-request: 400;
+          };
         };
       };
     }

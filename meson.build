@@ -49,6 +49,7 @@ python.install_sources(
   'webdict/result_text.py',
   'webdict/wiktionary.py',
   'webdict/quirks.py',
+  'webdict/swipe_bar.py',
   'webdict/i18n.py',
   subdir: 'webdict',
 )
