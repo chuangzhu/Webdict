@@ -5,7 +5,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock
 
-from webdict.swipe_bar import SwipeBar, _PageLayout, _SheetLayout
+from webdict.swipe_bar import SwipeBar, _PageLayout, _SheetLayout, _SheetContentLayout
 from gi.repository import Adw, GObject, Gtk
 
 
@@ -84,7 +84,7 @@ class SwipeBarTests(unittest.TestCase):
             child.allocate.assert_called_with(480, 600, -1, None)
 
     def test_interrupt_and_reverse_from_current_position(self):
-        state = SimpleNamespace(animation=Mock(), progress=0.63)
+        state = SimpleNamespace(animation=Mock(), progress=0.63, sheet_content_height=320)
         SwipeBar._begin_swipe(state, None)
         state.animation.pause.assert_called_once()
         self.assertEqual(state.progress, 0.63)
@@ -164,3 +164,26 @@ class NavigationGatingTests(unittest.TestCase):
             SwipeBar._sync_enabled(state)
             state.tracker.set_enabled.assert_called_with(expected)
             self.assertEqual(state.restore.called, not expected)
+
+
+class ContentHeightTests(unittest.TestCase):
+    def test_long_definition_does_not_grow_into_retraction_space(self):
+        widget = Mock()
+        widget.get_child.return_value.measure.return_value = (0, 1600, -1, -1)
+        layout = SimpleNamespace(viewport=SimpleNamespace(sheet_content_height=500))
+        self.assertEqual(_SheetContentLayout.do_measure(layout, widget, Gtk.Orientation.VERTICAL, 400),
+                         (0, 500, -1, -1))
+        layout.viewport.sheet_content_height = None
+        self.assertEqual(_SheetContentLayout.do_measure(layout, widget, Gtk.Orientation.VERTICAL, 400),
+                         (0, 1600, -1, -1))
+
+    def test_new_swipe_uses_latest_content_allocation(self):
+        state = SimpleNamespace(animation=Mock(), sheet_frame=Mock(), sheet=Mock(),
+                                sheet_content_height=None, progress=0)
+        state.sheet_frame.get_height.return_value = 560
+        state.sheet.get_sheet_height.return_value = 560
+        state.sheet.get_bottom_bar_height.return_value = 0
+        SwipeBar._begin_swipe(state, None)
+        self.assertEqual(state.sheet_content_height, 560)
+        self.assertEqual(state.collapse_distance, 560)
+        state.sheet_frame.queue_resize.assert_called_once()

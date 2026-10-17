@@ -30,6 +30,24 @@ class _PageLayout(Gtk.LayoutManager):
         widget.get_child().allocate(width, self.viewport.get_height(), baseline, None)
 
 
+class _SheetContentLayout(Gtk.LayoutManager):
+    def __init__(self, viewport):
+        super().__init__()
+        self.viewport = viewport
+
+    def do_measure(self, widget, orientation, for_size):
+        minimum, natural, min_baseline, nat_baseline = widget.get_child().measure(orientation, for_size)
+        # A long definition otherwise grows into the extra space used to retract
+        # the sheet. Keep its requested height at the pre-swipe allocation.
+        limit = self.viewport.sheet_content_height
+        if orientation == Gtk.Orientation.VERTICAL and limit is not None:
+            minimum, natural = min(minimum, limit), min(natural, limit)
+        return minimum, natural, min_baseline, nat_baseline
+
+    def do_allocate(self, widget, width, height, baseline):
+        widget.get_child().allocate(width, height, baseline, None)
+
+
 class SwipeBar(Adw.Bin, Adw.Swipeable):
     """Progress 0 is expanded; 1 collapses into the native bottom bar."""
 
@@ -41,7 +59,13 @@ class SwipeBar(Adw.Bin, Adw.Swipeable):
         self._root_transitioning = False
         self.progress = 0.0
         self.collapse_distance = 0
+        self.sheet_content_height = None
         self.gesture_active = False
+        content = sheet.get_sheet()
+        sheet.set_sheet(None)
+        self.sheet_frame = Adw.Bin(child=content)
+        self.sheet_frame.set_layout_manager(_SheetContentLayout(self))
+        sheet.set_sheet(self.sheet_frame)
         self.set_child(sheet)
         self.set_layout_manager(_SheetLayout())
         self.set_overflow(Gtk.Overflow.HIDDEN)
@@ -125,7 +149,9 @@ class SwipeBar(Adw.Bin, Adw.Swipeable):
 
     def _begin_swipe(self, _tracker):
         self.animation.pause()
-        if self.progress == 0:
+        if self.sheet_content_height is None:
+            self.sheet_content_height = self.sheet_frame.get_height()
+            self.sheet_frame.queue_resize()
             self.collapse_distance = max(
                 0, self.sheet.get_sheet_height() - self.sheet.get_bottom_bar_height()
             )
@@ -147,6 +173,8 @@ class SwipeBar(Adw.Bin, Adw.Swipeable):
     def restore(self):
         self.animation.pause()
         self._set_progress(0)
+        self.sheet_content_height = None
+        self.sheet_frame.queue_resize()
 
     def _open_changed(self, sheet, _pspec):
         self.gesture_active = False
@@ -154,6 +182,9 @@ class SwipeBar(Adw.Bin, Adw.Swipeable):
         self._sync_enabled()
 
     def _settled(self, _animation):
+        if self.progress == 0:
+            self.restore()
+            return
         if self.progress < 1 or not self.sheet.get_open():
             return
         # Commit while unmapped to skip a second native closing animation.
